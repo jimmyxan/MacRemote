@@ -29,7 +29,28 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ n: Notification) {
         _ = AXIsProcessTrustedWithOptions([kAXTrustedCheckOptionPrompt.takeUnretainedValue(): true] as CFDictionary)
 
-        server = Server(token: { [unowned self] in self.token }, handler: { [unowned self] a, v in self.commands.run(a, v) })
+        server = Server(token: { [unowned self] in self.token }, handler: { [unowned self] a, v in
+            switch a {
+            case "preview_on": return ScreenPreview.setEnabled(true)
+            case "preview_off": return ScreenPreview.setEnabled(false)
+            default: return self.commands.run(a, v)
+            }
+        }, resource: { req in
+            switch req.path {
+            case "/nowplaying":
+                let json = (try? JSONSerialization.data(withJSONObject: NowPlaying.current())) ?? Data("{}".utf8)
+                return (200, "application/json", json)
+            case "/artwork":
+                guard let art = NowPlaying.artwork(key: req.query["k"] ?? "") else { return nil }
+                return (200, art.mime, art.data)
+            case "/screen":
+                do { return (200, "image/jpeg", try ScreenPreview.jpeg(display: Int(req.query["d"] ?? "") ?? 0)) }
+                catch let e as ScreenPreview.Failure { return (403, "text/plain; charset=utf-8", Data(e.message.utf8)) }
+                catch { return (500, "text/plain; charset=utf-8", Data("Cattura fallita".utf8)) }
+            default:
+                return nil
+            }
+        })
         do { try server.start() } catch {
             let a = NSAlert()
             a.messageText = "MacRemote: porta \(Server.port) non disponibile"
@@ -43,6 +64,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         rebuildMenu()
         showQR()
     }
+
+    /// Double-clicking the app while it is already running lands here. Without this nothing visible happens,
+    /// which looks like "it doesn't start" whenever the menu bar has no room for the status item.
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        showQR()
+        return false
+    }
+
+    @objc private func quit() { NSApp.terminate(nil) }
 
     private func rebuildMenu() {
         let m = NSMenu()
@@ -89,18 +119,24 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let img = NSImage(size: NSSize(width: size, height: size))
         img.addRepresentation(rep)
 
-        let view = NSImageView(frame: NSRect(x: 20, y: 60, width: size, height: size))
+        let view = NSImageView(frame: NSRect(x: 20, y: 90, width: size, height: size))
         view.image = img
         let label = NSTextField(labelWithString: "Inquadra con la fotocamera dell'iPhone (stessa Wi-Fi)")
         label.frame = NSRect(x: 10, y: 20, width: size + 20, height: 20)
         label.alignment = .center
 
-        let w = qrWindow ?? NSWindow(contentRect: NSRect(x: 0, y: 0, width: size + 40, height: size + 90),
+        let quit = NSButton(title: "Esci da MacRemote", target: self, action: #selector(quit))
+        quit.bezelStyle = .rounded
+        quit.frame = NSRect(x: 20 + (size - 160) / 2, y: 14, width: 160, height: 28)
+        label.frame.origin.y = 48
+
+        let w = qrWindow ?? NSWindow(contentRect: NSRect(x: 0, y: 0, width: size + 40, height: size + 120),
                                      styleMask: [.titled, .closable], backing: .buffered, defer: false)
         w.title = "MacRemote"
         w.contentView = NSView(frame: w.contentRect(forFrameRect: w.frame))
         w.contentView?.addSubview(view)
         w.contentView?.addSubview(label)
+        w.contentView?.addSubview(quit)
         w.isReleasedWhenClosed = false
         if qrWindow == nil { w.center() }
         qrWindow = w

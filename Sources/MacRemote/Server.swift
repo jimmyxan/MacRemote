@@ -9,10 +9,14 @@ final class Server {
     private var recent: [Date] = []
     let token: () -> String
     let handler: (String, String?) -> [String: Any]
+    /// Slow GET resources (now playing, artwork, screenshots): (status, content type, body) or nil for 404. Runs off the server queue.
+    let resource: (HTTPRequest) -> (Int, String, Data)?
 
-    init(token: @escaping () -> String, handler: @escaping (String, String?) -> [String: Any]) {
+    init(token: @escaping () -> String, handler: @escaping (String, String?) -> [String: Any],
+         resource: @escaping (HTTPRequest) -> (Int, String, Data)?) {
         self.token = token
         self.handler = handler
+        self.resource = resource
     }
 
     func start() throws {
@@ -63,7 +67,7 @@ final class Server {
         case ("GET", "/"):
             send(conn, 200, "text/html; charset=utf-8", WebUI.html)
         case ("GET", "/status"):
-            let json = (try? JSONSerialization.data(withJSONObject: Battery.status().merging(Brightness.availability()) { a, _ in a })) ?? Data("{}".utf8)
+            let json = (try? JSONSerialization.data(withJSONObject: Battery.status().merging(Brightness.availability()) { a, _ in a }.merging(["displayCount": ScreenPreview.displayCount()]) { a, _ in a })) ?? Data("{}".utf8)
             send(conn, 200, "application/json", json)
         case ("POST", "/cmd"):
             guard let obj = try? JSONSerialization.jsonObject(with: req.body) as? [String: Any],
@@ -73,6 +77,11 @@ final class Server {
             let result = handler(action, obj["value"] as? String)
             let json = (try? JSONSerialization.data(withJSONObject: result)) ?? Data("{}".utf8)
             send(conn, 200, "application/json", json)
+        case ("GET", _):
+            DispatchQueue.global().async { [self] in
+                if let (status, type, body) = resource(req) { send(conn, status, type, body) }
+                else { send(conn, 404, "text/plain", "not found") }
+            }
         default:
             send(conn, 404, "text/plain", "not found")
         }

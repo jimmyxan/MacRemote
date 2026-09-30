@@ -38,6 +38,30 @@ form{display:flex;gap:8px}
 input{flex:1;min-width:0;min-height:56px;border:0;border-radius:16px;background:var(--btn);color:var(--fg);font-size:17px;padding:0 16px;outline:none;-webkit-user-select:text;user-select:text}
 input::placeholder{color:var(--dim)}
 form button{flex:0 0 76px}
+#np{display:flex;gap:14px;align-items:center}
+#np[hidden]{display:none}
+#np-art{width:76px;height:76px;border-radius:14px;background:var(--btn);object-fit:cover;flex:0 0 76px}
+#np-info{flex:1;min-width:0}
+#np-title{font-size:17px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#np-artist{font-size:14px;color:var(--dim);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#np-bar{height:4px;border-radius:2px;background:var(--btn-on);margin-top:12px;overflow:hidden}
+#np-fill{height:100%;width:0;background:var(--accent)}
+#np-time{display:flex;justify-content:space-between;font-size:11px;color:var(--dim);margin-top:5px;font-variant-numeric:tabular-nums}
+.head{display:flex;align-items:center;justify-content:space-between;margin:0 4px 10px}
+.head .label{margin:0}
+.sw{position:relative;width:51px;height:31px;flex:0 0 51px}
+.sw input{position:absolute;inset:0;width:100%;height:100%;min-height:0;opacity:0;margin:0;z-index:1}
+.sw span{position:absolute;inset:0;border-radius:99px;background:var(--btn-on);transition:background .2s}
+.sw span::after{content:"";position:absolute;top:2px;left:2px;width:27px;height:27px;border-radius:50%;background:#fff;transition:transform .2s}
+.sw input:checked+span{background:var(--ok)}
+.sw input:checked+span::after{transform:translateX(20px)}
+#pv-body{margin-top:12px}
+#pv-body[hidden]{display:none}
+#pv-img{display:block;width:100%;border-radius:14px;background:var(--btn);min-height:120px;object-fit:contain}
+#pv-iv{margin-top:10px}
+#pv-iv button{min-height:40px;font-size:14px;border-radius:12px}
+#pv-iv button.sel{background:var(--accent);color:#fff}
+#pv-hint{font-size:12px;color:var(--dim);margin:8px 4px 0;text-align:center}
 #toast{position:fixed;left:50%;top:max(10px,env(safe-area-inset-top));transform:translate(-50%,-80px);background:rgba(44,44,48,.95);
   -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);padding:10px 16px;border-radius:99px;font-size:14px;font-weight:600;
   transition:transform .25s;pointer-events:none;max-width:90%;text-align:center}
@@ -59,6 +83,15 @@ form button{flex:0 0 76px}
 </defs></svg>
 
 <header><h1>MacRemote</h1><div id="bat"></div></header>
+
+<section class="card" id="np" hidden>
+  <img id="np-art" alt="">
+  <div id="np-info">
+    <div id="np-title"></div><div id="np-artist"></div>
+    <div id="np-bar"><div id="np-fill"></div></div>
+    <div id="np-time"><span id="np-pos">0:00</span><span id="np-dur">0:00</span></div>
+  </div>
+</section>
 
 <section class="card">
   <p class="label">Volume</p>
@@ -122,6 +155,18 @@ form button{flex:0 0 76px}
   </div>
 </section>
 
+<section class="card" id="pv" hidden>
+  <div class="head"><p class="label">Anteprima schermo</p>
+    <label class="sw"><input type="checkbox" id="pv-sw"><span></span></label></div>
+  <div id="pv-body" hidden>
+    <img id="pv-img" alt="">
+    <div class="row" id="pv-iv">
+      <button data-s="1000">1s</button><button data-s="2000" class="sel">2s</button><button data-s="5000">5s</button>
+    </div>
+    <p id="pv-hint"></p>
+  </div>
+</section>
+
 <div id="toast"></div>
 <script>
 const p=new URLSearchParams(location.search);
@@ -150,6 +195,7 @@ async function status(){
     $('sec-mac').hidden=j.hasMacDisplay===false;
     $('sec-ext').hidden=j.hasExternalDisplay===false;
     $('sec-bright').hidden=j.hasMacDisplay===false&&j.hasExternalDisplay===false;
+    $('pv').hidden=false;pv.n=j.displayCount||1;pvHint();
     if(!j.hasBattery){b.style.display='none';return}
     b.style.display='flex';
     b.className=j.charging?'chg':(j.percent<=20&&!j.plugged?'low':'');
@@ -167,6 +213,75 @@ document.querySelectorAll('button[data-a]').forEach(b=>{
   });
   ['pointerup','pointercancel','pointerleave'].forEach(ev=>b.addEventListener(ev,stop));
 });
+
+/* Now Playing */
+let np=null,npAt=0,npKey='',npArt=false;
+const fmt=t=>{t=Math.max(0,Math.floor(t||0));return Math.floor(t/60)+':'+String(t%60).padStart(2,'0')};
+async function pollNP(){
+  if(document.hidden)return;
+  try{
+    const r=await fetch('/nowplaying',{headers:{'X-Token':T}});
+    if(!r.ok)return;
+    np=await r.json();npAt=performance.now();
+    $('np').hidden=!np.active;
+    if(!np.active)return;
+    $('np-title').textContent=np.title;
+    $('np-artist').textContent=[np.artist,np.album].filter(Boolean).join(' · ');
+    if(np.art!==npKey||!npArt){
+      if(np.art!==npKey){npKey=np.art;npArt=false;$('np-art').removeAttribute('src')}
+      fetch('/artwork?k='+encodeURIComponent(np.art),{headers:{'X-Token':T}}).then(r=>r.ok?r.blob():null).then(b=>{
+        if(b&&npKey===np.art){npArt=true;$('np-art').src=URL.createObjectURL(b)}
+      }).catch(()=>{});
+    }
+    drawNP();
+  }catch(e){}
+}
+function drawNP(){
+  if(!np||!np.active)return;
+  let pos=np.position+(np.playing?(performance.now()-npAt)/1000:0);
+  if(np.duration)pos=Math.min(pos,np.duration);
+  $('np-fill').style.width=(np.duration?pos/np.duration*100:0)+'%';
+  $('np-pos').textContent=fmt(pos);$('np-dur').textContent=fmt(np.duration);
+}
+pollNP();setInterval(pollNP,2000);setInterval(drawNP,500);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)pollNP()});
+
+/* Screen preview: off by default, never persisted, switched off when the page is hidden */
+const pv={on:false,iv:2000,d:0,timer:null,url:null,n:1};
+function pvShow(url){if(pv.url)URL.revokeObjectURL(pv.url);pv.url=url;if(url)$('pv-img').src=url;else $('pv-img').removeAttribute('src')}
+async function pvTick(){
+  if(!pv.on)return;
+  try{
+    const r=await fetch('/screen?d='+pv.d+'&_='+Date.now(),{headers:{'X-Token':T}});
+    if(!pv.on)return;
+    if(!r.ok){toast(await r.text(),true);return pvSet(false)}
+    pvShow(URL.createObjectURL(await r.blob()));
+  }catch(e){}
+  if(pv.on)pv.timer=setTimeout(pvTick,pv.iv);
+}
+async function pvSet(on){
+  clearTimeout(pv.timer);pv.on=false;
+  $('pv-sw').checked=on;$('pv-body').hidden=!on;
+  if(on){
+    try{
+      const r=await fetch('/cmd',{method:'POST',headers:{'X-Token':T},body:JSON.stringify({action:'preview_on'})});
+      const j=await r.json();
+      if(!j.ok){toast(j.info||'Anteprima non disponibile',true);$('pv-sw').checked=false;$('pv-body').hidden=true;return}
+    }catch(e){toast('Mac non raggiungibile',true);$('pv-sw').checked=false;$('pv-body').hidden=true;return}
+    pv.on=true;pvTick();
+  }else{
+    pvShow(null);
+    try{fetch('/cmd',{method:'POST',headers:{'X-Token':T},body:JSON.stringify({action:'preview_off'}),keepalive:true})}catch(e){}
+  }
+}
+function pvHint(){$('pv-hint').textContent=pv.n>1?'Tocca l’immagine per cambiare schermo ('+(pv.d%pv.n+1)+'/'+pv.n+')':''}
+$('pv-sw').addEventListener('change',e=>pvSet(e.target.checked));
+$('pv-img').addEventListener('click',()=>{if(pv.n>1){pv.d=(pv.d+1)%pv.n;pvHint();clearTimeout(pv.timer);pvTick()}});
+document.querySelectorAll('#pv-iv button').forEach(b=>b.addEventListener('click',()=>{
+  pv.iv=+b.dataset.s;document.querySelectorAll('#pv-iv button').forEach(x=>x.classList.toggle('sel',x===b));
+}));
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&pv.on)pvSet(false)});
+window.addEventListener('pagehide',()=>{if(pv.on)pvSet(false)});
 $('tf').addEventListener('submit',e=>{
   e.preventDefault();const i=$('ti');
   if(i.value){send('text',i.value);i.value=''}

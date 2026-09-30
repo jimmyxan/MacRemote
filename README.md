@@ -7,7 +7,7 @@
 **Your Mac's basic controls on your iPhone. Local network only.**
 
 
-![macOS](https://img.shields.io/badge/macOS-13%2B-000000?logo=apple&logoColor=white)
+![macOS](https://img.shields.io/badge/macOS-14%2B-000000?logo=apple&logoColor=white)
 ![Swift](https://img.shields.io/badge/Swift-5.9%2B-F05138?logo=swift&logoColor=white)
 ![SwiftPM](https://img.shields.io/badge/Swift_Package_Manager-supported-F05138?logo=swift&logoColor=white)
 ![AppKit](https://img.shields.io/badge/AppKit-menu_bar_app-0A84FF)
@@ -43,6 +43,9 @@ Sul Mac gira una piccola app nella barra dei menu. Sull'iPhone non installi null
 - **Testo**: scrivi dall'iPhone nel campo attivo sul Mac.
 - **Schermo**: spegni il display (il Mac resta acceso) oppure blocca il Mac.
 - **Batteria del Mac** in alto nella pagina (percentuale, collegato o in carica).
+- **In riproduzione**: titolo, artista, copertina e barra di avanzamento di ciò che il Mac sta riproducendo, da qualsiasi fonte: YouTube, Netflix, Safari, Chrome, Music, Spotify. Titolo e copertina dipendono da ciò che il sito o l'app comunicano al sistema. Un contenuto in pausa resta visibile per 10 minuti. È solo in lettura, non si può spostare la barra.
+- **Anteprima dello schermo**: screenshot aggiornato ogni 1, 2 o 5 secondi. È **spenta di default**: si attiva con l'interruttore nella pagina, si spegne da sola chiudendo la pagina o dopo 15 secondi senza richieste. Con più schermi, tocca l'immagine per cambiare.
+- Se l'icona nella barra dei menu non si vede, il doppio click su MacRemote (già aperto) mostra di nuovo la finestra con il QR, che ha anche il pulsante **Esci da MacRemote**.
 - Le sezioni luminosità si nascondono se lo schermo corrispondente non è attivo.
 - Tenendo premuto volume, luminosità e frecce il comando si ripete.
 - La pagina si può aggiungere alla Home dell'iPhone e si apre come un'app.
@@ -67,12 +70,28 @@ La pagina che si apre sull'iPhone. A sinistra la parte alta: volume, luminosità
 | Navigazione | Frecce, OK (Invio), Esc, Tab, Maiusc+Tab, Spazio |
 | Testo | Scrive sul Mac, con cancella e invio |
 | Schermo | Spegni il display o blocca il Mac |
+| In riproduzione | Mostra titolo, artista, copertina e avanzamento (solo lettura) |
+| Anteprima schermo | Screenshot del Mac ogni 1, 2 o 5 secondi, spento di default |
+
+### In riproduzione e anteprima schermo
+
+In cima alla pagina compare la scheda **In riproduzione**, solo quando il Mac sta riproducendo qualcosa. In fondo c'è l'interruttore **Anteprima schermo**, spento ogni volta che apri la pagina.
+
+<div align="center">
+<img src="docs/inRiproduzione.jpg" width="320" alt="Scheda In riproduzione: copertina, titolo, canale e barra di avanzamento">
+&nbsp;&nbsp;&nbsp;
+<img src="docs/anteprimaSchermo.jpg" width="320" alt="Anteprima schermo attiva, con scelta dell'intervallo 1s, 2s, 5s">
+</div>
+
+- **Anteprima**: scegli l'intervallo (1s, 2s, 5s). Con più schermi tocca l'immagine per passare all'altro (nell'esempio "2/2"). Chiudendo la pagina o mandandola in background l'anteprima si spegne. Il Mac la spegne comunque dopo 15 secondi senza richieste e rifiuta di catturare lo schermo finché l'interruttore non è acceso.
+- **Privacy**: l'anteprima mostra tutto ciò che c'è sullo schermo, comprese finestre private. Le immagini viaggiano non cifrate sulla rete locale (vedi Sicurezza).
 
 ### Cosa NON fa
 
 - **Non funziona fuori casa**: solo Mac e iPhone sulla stessa rete Wi-Fi/LAN. Non c'è nessun server in cloud.
 - **Non è cifrato**: usa HTTP semplice, protetto da un token casuale nel link. Va bene su una rete di casa di cui ti fidi, non su Wi-Fi pubblici.
-- **Non è un mouse/trackpad** e non mostra lo schermo del Mac.
+- **Non è un mouse/trackpad** e lo schermo del Mac si vede solo come anteprima statica a bassa frequenza, non come controllo remoto.
+- **"In riproduzione" è solo in lettura**: mostra cosa suona, ma non si può spostare la barra. Play/pausa, avanti e indietro usano i tasti multimediali.
 - **Non è testato ovunque**: è stato provato solo su un MacBook Pro M3 Pro con un monitor Alienware AW3425DWM. Altri monitor possono comportarsi in modo diverso (vedi sotto).
 
 ### Come funziona la luminosità
@@ -83,9 +102,13 @@ La pagina che si apre sull'iPhone. A sinistra la parte alta: volume, luminosità
 
 Essendo API private, un aggiornamento di macOS potrebbe romperle.
 
+### Come funziona "In riproduzione"
+
+Legge le informazioni di riproduzione del sistema (`MediaRemote`, API privata). Da macOS 15.4 Apple la nega alle app di terze parti, ma non a `/usr/bin/perl`, che è firmato da Apple. MacRemote lancia quindi perl con una piccola libreria (`tools/mediaremote.m`, compilata da `build.sh` dentro l'app) che legge il titolo e lo stampa. Non serve nessun permesso. Se la libreria manca (per esempio con un semplice `swift build`), si ripiega su AppleScript, che legge solo Music e Spotify e richiede il permesso Automazione.
+
 ### Requisiti
 
-- Un Mac con macOS 13 o successivo.
+- Un Mac con macOS 14 o successivo.
 - Strumenti da riga di comando di Apple, con Swift 5.9 o superiore (`xcode-select --install`). Non serve Xcode.
 - Un iPhone (o qualsiasi telefono con un browser) sulla stessa rete del Mac.
 
@@ -100,10 +123,12 @@ open MacRemote.app
 
 `build.sh` compila il progetto, genera le icone e crea `MacRemote.app`. Puoi spostarla in `/Applications`.
 
-**Al primo avvio** macOS chiede due permessi:
+**Al primo avvio** macOS chiede questi permessi:
 
 1. **Accessibilità** (Impostazioni di Sistema → Privacy e sicurezza → Accessibilità → attiva MacRemote). Senza questo permesso i tasti volume, media, frecce e testo non funzionano; la luminosità sì.
 2. **Rete locale**: accetta la richiesta, altrimenti l'iPhone non riesce a collegarsi.
+3. **Registrazione schermo** (Impostazioni di Sistema → Privacy e sicurezza → Registrazione schermo → attiva MacRemote). Serve solo per l'**anteprima dello schermo**: compare la prima volta che accendi l'interruttore. Senza, tutto il resto funziona.
+4. **Automazione** (Music e Spotify): serve solo nel ripiego AppleScript di "In riproduzione", cioè se l'app è stata compilata senza `build.sh`. Con `build.sh` non viene richiesta.
 
 Poi chiudi MacRemote dalla barra dei menu (Esci) e riaprilo.
 
@@ -129,13 +154,20 @@ Consigliato: nel menu di MacRemote attiva **Avvia al login**.
 | Il volume non cambia | Se l'audio esce da un monitor HDMI/DP con volume fisso, il Mac non può cambiarlo. |
 | La luminosità del monitor non cambia | Vedi "Come funziona la luminosità". Come ripiego si scurisce via software. |
 | Il link non funziona più | Hai rigenerato il token: scansiona di nuovo il QR. |
+| Non vedo l'icona nella barra dei menu e facendo doppio click sull'app non succede nulla | Un'app che gestisce la barra dei menu (ad esempio **Hidden Bar**) può nascondere le icone nuove: MacRemote è in esecuzione ma invisibile. Chiudi quell'app, oppure tieni premuto ⌘ e trascina l'icona di MacRemote nella zona sempre visibile. Intanto il doppio click su MacRemote riapre la finestra con il QR, che ha il pulsante "Esci da MacRemote" (può aprirsi sull'altro schermo). |
+| L'anteprima dice "Permesso Registrazione schermo mancante" | Attiva MacRemote in Registrazione schermo, poi esci e riapri l'app. Se macOS non mostra la voce, accendi l'interruttore una volta per farla comparire. |
+| L'anteprima dice "Anteprima disattivata" | Il Mac l'ha spenta perché per 15 secondi non sono arrivate richieste (pagina in background, Wi-Fi perso). Riaccendi l'interruttore. |
+| "In riproduzione" non compare | Il contenuto è fermo da più di 10 minuti, oppure non sta suonando nulla. Metti in play: la scheda torna entro 2 secondi. |
+| "In riproduzione" mostra "Contenuto multimediale" senza copertina | La fonte non comunica titolo e copertina al sistema (succede con alcuni siti e lettori). Il resto funziona. |
+| "In riproduzione" mostra solo Music e Spotify | L'app è stata compilata con `swift build` e manca la libreria. Compila con `./build.sh`. |
 
 ### Sicurezza
 
 - Il server accetta solo connessioni da indirizzi di rete privata (192.168.x.x, 10.x.x.x, 172.16-31.x.x, link-local, loopback).
 - Ogni richiesta richiede un token casuale a 128 bit generato al primo avvio.
 - Limite di 40 richieste al secondo.
-- Traffico non cifrato: chiunque sulla tua rete che intercetti il link può usare il telecomando.
+- L'anteprima dello schermo è spenta di default, si spegne da sola dopo 15 secondi senza richieste e, da spenta, il Mac non cattura lo schermo.
+- Traffico non cifrato: chiunque sulla tua rete che intercetti il link può usare il telecomando e, se l'anteprima è accesa, vedere lo schermo.
 
 ### Struttura del progetto
 
@@ -143,6 +175,7 @@ Consigliato: nel menu di MacRemote attiva **Avvia al login**.
 Package.swift            Swift Package (nessuna dipendenza)
 build.sh                 compila e crea MacRemote.app (con icone)
 tools/make_icon.swift    genera le icone
+tools/mediaremote.m      libreria per leggere "In riproduzione" (caricata da perl)
 Sources/MacRemote/
   main.swift             app barra dei menu, QR, token, avvio al login
   Server.swift           server HTTP (Network.framework) + Bonjour
@@ -150,6 +183,8 @@ Sources/MacRemote/
   Input.swift            tasti multimediali, tastiera, testo, blocco/spegni schermo
   Brightness.swift       luminosità: DisplayServices, DDC/CI, gamma
   Battery.swift          stato batteria
+  NowPlaying.swift       brano in riproduzione (AppleScript: Music, Spotify)
+  ScreenPreview.swift    anteprima schermo (ScreenCaptureKit)
   WebUI.swift            pagina web per l'iPhone (HTML/CSS/JS incorporati)
 ```
 
@@ -176,6 +211,9 @@ A small menu bar app runs on the Mac. Nothing to install on the iPhone: you open
 - **Text**: type on the iPhone into the field that is focused on the Mac.
 - **Screen**: turn the display off (the Mac stays on) or lock the Mac.
 - **Mac battery** at the top of the page (percentage, plugged in or charging).
+- **Now Playing**: title, artist, cover art and progress bar of whatever the Mac is playing, from any source: YouTube, Netflix, Safari, Chrome, Music, Spotify. Title and cover depend on what the site or app reports to the system. Paused content stays visible for 10 minutes. Read-only: you cannot seek.
+- **Screen preview**: a screenshot refreshed every 1, 2 or 5 seconds. It is **off by default**: switch it on in the page; it turns itself off when the page is closed or after 15 seconds without requests. With several displays, tap the image to switch.
+- If the menu bar icon is not visible, double-clicking MacRemote (already running) shows the QR window again, which also has a **Esci da MacRemote** (Quit) button.
 - Brightness sections hide when the matching display is not active.
 - Holding volume, brightness and arrow buttons repeats the command.
 - The page can be added to the iPhone Home Screen and opens like an app.
@@ -200,12 +238,28 @@ The page that opens on the iPhone. Left: the top part, with volume, brightness (
 | Navigation | Arrows, OK (Return), Esc, Tab, Shift+Tab, Space |
 | Text | Types on the Mac, with backspace and send |
 | Screen | Turn the display off or lock the Mac |
+| Now Playing | Title, artist, cover art and progress (read-only) |
+| Screen preview | Screenshot of the Mac every 1, 2 or 5 seconds, off by default |
+
+### Now Playing and screen preview
+
+The **Now Playing** card appears at the top of the page, only while the Mac is playing something. The **Screen preview** switch is at the bottom and is off every time you open the page.
+
+<div align="center">
+<img src="docs/inRiproduzione.jpg" width="320" alt="Now Playing card: cover art, title, channel and progress bar">
+&nbsp;&nbsp;&nbsp;
+<img src="docs/anteprimaSchermo.jpg" width="320" alt="Screen preview on, with the 1s, 2s, 5s interval choice">
+</div>
+
+- **Preview**: pick the interval (1s, 2s, 5s). With several displays, tap the image to switch (shown as "2/2" above). Closing the page or sending it to the background turns the preview off. The Mac also turns it off after 15 seconds without requests, and refuses to capture the screen while the switch is off.
+- **Privacy**: the preview shows everything on screen, including private windows. Images travel unencrypted on the local network (see Security).
 
 ### What it does NOT do
 
 - **It does not work away from home**: Mac and iPhone must be on the same Wi-Fi/LAN. There is no cloud server.
 - **It is not encrypted**: plain HTTP, protected by a random token in the link. Fine on a home network you trust, not on public Wi-Fi.
-- **It is not a mouse/trackpad** and it does not show the Mac's screen.
+- **It is not a mouse/trackpad**, and the Mac's screen is only shown as a low-rate static preview, not as remote control.
+- **Now Playing is read-only**: it shows what is playing, but you cannot seek. Play/pause, next and previous use the media keys.
 - **It is not tested everywhere**: it has only been tried on a MacBook Pro M3 Pro with an Alienware AW3425DWM monitor. Other monitors may behave differently (see below).
 
 ### How brightness works
@@ -216,11 +270,15 @@ The page that opens on the iPhone. Left: the top part, with volume, brightness (
 
 These are private APIs, so a macOS update could break them.
 
+### How Now Playing works
+
+It reads the system playback info (`MediaRemote`, a private API). Since macOS 15.4 Apple denies it to third-party apps, but not to `/usr/bin/perl`, which is signed by Apple. MacRemote therefore runs perl with a small library (`tools/mediaremote.m`, built by `build.sh` into the app) that reads the title and prints it. No permission is needed. If the library is missing (for example with a plain `swift build`), it falls back to AppleScript, which reads only Music and Spotify and needs the Automation permission.
+
 > Note: the app menu and the web page labels are currently in Italian.
 
 ### Requirements
 
-- A Mac running macOS 13 or later.
+- A Mac running macOS 14 or later.
 - Apple command line tools with Swift 5.9 or later (`xcode-select --install`). Full Xcode is not needed.
 - An iPhone (or any phone with a browser) on the same network as the Mac.
 
@@ -235,10 +293,12 @@ open MacRemote.app
 
 `build.sh` builds the project, generates the icons and creates `MacRemote.app`. You can move it to `/Applications`.
 
-**On first launch** macOS asks for two permissions:
+**On first launch** macOS asks for these permissions:
 
 1. **Accessibility** (System Settings → Privacy & Security → Accessibility → enable MacRemote). Without it, volume, media, arrows and text do not work; brightness does.
 2. **Local Network**: accept the prompt, otherwise the iPhone cannot connect.
+3. **Screen Recording** (System Settings → Privacy & Security → Screen Recording → enable MacRemote). Needed only for the **screen preview**: it appears the first time you turn the switch on. Everything else works without it.
+4. **Automation** (Music and Spotify): needed only by the AppleScript fallback of Now Playing, that is, if the app was built without `build.sh`. With `build.sh` it is not requested.
 
 Then quit MacRemote from the menu bar (Quit) and open it again.
 
@@ -264,13 +324,20 @@ Recommended: turn on **Start at login** in the MacRemote menu.
 | Volume does not change | If audio plays through an HDMI/DP monitor with fixed volume, the Mac cannot change it. |
 | Monitor brightness does not change | See "How brightness works". Software dimming is the fallback. |
 | The link stopped working | You regenerated the token: scan the QR again. |
+| I cannot see the menu bar icon and double-clicking the app does nothing | A menu bar manager (for example **Hidden Bar**) can hide new icons: MacRemote is running but invisible. Quit that app, or hold ⌘ and drag the MacRemote icon into the always-visible area. Meanwhile, double-clicking MacRemote reopens the QR window, which has a "Esci da MacRemote" (Quit) button (it may open on the other display). |
+| Preview says "Permesso Registrazione schermo mancante" (Screen Recording permission missing) | Enable MacRemote in Screen Recording, then quit and reopen the app. If macOS does not list it, turn the switch on once so it appears. |
+| Preview says "Anteprima disattivata" (preview off) | The Mac turned it off because no requests arrived for 15 seconds (page in the background, Wi-Fi lost). Turn the switch on again. |
+| Now Playing does not appear | The content has been paused for more than 10 minutes, or nothing is playing. Press play: the card returns within 2 seconds. |
+| Now Playing shows "Contenuto multimediale" (media content) with no cover | The source does not report title and cover to the system (some sites and players). Everything else works. |
+| Now Playing shows only Music and Spotify | The app was built with `swift build` and the library is missing. Build with `./build.sh`. |
 
 ### Security
 
 - The server only accepts connections from private network addresses (192.168.x.x, 10.x.x.x, 172.16-31.x.x, link-local, loopback).
 - Every request needs a random 128-bit token generated on first launch.
 - Rate limit of 40 requests per second.
-- Traffic is not encrypted: anyone on your network who intercepts the link can use the remote.
+- The screen preview is off by default, turns itself off after 15 seconds without requests, and while it is off the Mac does not capture the screen.
+- Traffic is not encrypted: anyone on your network who intercepts the link can use the remote and, while the preview is on, see the screen.
 
 ### Project layout
 
@@ -278,6 +345,7 @@ Recommended: turn on **Start at login** in the MacRemote menu.
 Package.swift            Swift Package (no dependencies)
 build.sh                 builds and creates MacRemote.app (with icons)
 tools/make_icon.swift    generates the icons
+tools/mediaremote.m      library that reads Now Playing (loaded by perl)
 Sources/MacRemote/
   main.swift             menu bar app, QR, token, start at login
   Server.swift           HTTP server (Network.framework) + Bonjour
@@ -285,6 +353,8 @@ Sources/MacRemote/
   Input.swift            media keys, keyboard, text, lock / display sleep
   Brightness.swift       brightness: DisplayServices, DDC/CI, gamma
   Battery.swift          battery status
+  NowPlaying.swift       now playing (AppleScript: Music, Spotify)
+  ScreenPreview.swift    screen preview (ScreenCaptureKit)
   WebUI.swift            iPhone web page (embedded HTML/CSS/JS)
 ```
 

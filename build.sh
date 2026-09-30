@@ -20,6 +20,10 @@ swift tools/make_icon.swift "$ICONS/flat.png" flat
 sips -z 180 180 "$ICONS/flat.png" --out "$APP/Contents/Resources/touch-icon.png" >/dev/null
 rm -rf "$ICONS"
 
+# Now Playing helper: loaded by /usr/bin/perl to read MediaRemote (see tools/mediaremote.m).
+clang -dynamiclib -fobjc-arc -framework Foundation -o "$APP/Contents/Resources/libmediaremote.dylib" tools/mediaremote.m
+codesign --force --sign - "$APP/Contents/Resources/libmediaremote.dylib"
+
 cat > "$APP/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -32,6 +36,7 @@ cat > "$APP/Contents/Info.plist" <<PLIST
 <key>CFBundleVersion</key><string>1</string>
 <key>LSUIElement</key><true/>
 <key>NSLocalNetworkUsageDescription</key><string>Serve il telecomando web sulla rete locale.</string>
+<key>NSAppleEventsUsageDescription</key><string>Mostra il brano in riproduzione di Music e Spotify sul telecomando.</string>
 <key>NSBonjourServices</key><array><string>_http._tcp</string></array>
 </dict></plist>
 PLIST
