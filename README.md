@@ -5,7 +5,7 @@
 # MacRemote
 
 **Your Mac's basic controls on your iPhone. Local network only.**
-**I controlli base del tuo Mac sul tuo iPhone. Solo rete locale.**
+
 
 ![macOS](https://img.shields.io/badge/macOS-13%2B-000000?logo=apple&logoColor=white)
 ![Swift](https://img.shields.io/badge/Swift-5.9%2B-F05138?logo=swift&logoColor=white)
