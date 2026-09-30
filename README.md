@@ -57,6 +57,8 @@ La pagina che si apre sull'iPhone. A sinistra la parte alta: volume, luminosità
 <img src="docs/screenshot-2.png" width="280" alt="Interfaccia iPhone: navigazione, testo, spegni schermo e blocca">
 </div>
 
+---
+
 | Sezione | Cosa controlla |
 | --- | --- |
 | Volume | Diminuisci, muto, aumenta |
@@ -187,6 +189,8 @@ The page that opens on the iPhone. Left: the top part, with volume, brightness (
 &nbsp;&nbsp;&nbsp;
 <img src="docs/screenshot-2.png" width="280" alt="iPhone interface: navigation, text, display off and lock">
 </div>
+
+---
 
 | Section | What it controls |
 | --- | --- |
