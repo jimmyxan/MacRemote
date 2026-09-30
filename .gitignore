@@ -1,0 +1,4 @@
+.build/
+MacRemote.app/
+.DS_Store
+.swiftpm/
