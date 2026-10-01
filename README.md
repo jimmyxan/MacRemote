@@ -117,6 +117,10 @@ Legge le informazioni di riproduzione del sistema (`MediaRemote`, API privata). 
 
 ### Installazione
 
+**Senza compilare nulla:** scarica `MacRemote.zip` dalla pagina [Releases](https://github.com/jimmyxan/MacRemote/releases/latest), decomprimilo e sposta MacRemote in Applicazioni. Al primo avvio, click destro sull'app e Apri (l'app non è notarizzata da Apple). Serve un Mac con chip Apple. Per compilarla da te, segui i passi qui sotto.
+
+**Compilando da sorgente:**
+
 ```bash
 git clone https://github.com/jimmyxan/MacRemote.git
 cd MacRemote
@@ -178,6 +182,7 @@ Consigliato: nel menu di MacRemote attiva **Avvia al login**.
 Package.swift            Swift Package (nessuna dipendenza)
 build.sh                 compila e crea MacRemote.app (con icone)
 tools/make_icon.swift    genera le icone
+tools/release.sh         compila e crea MacRemote.zip per una GitHub Release
 tools/mediaremote.m      libreria per leggere "In riproduzione" (caricata da perl)
 Sources/MacRemote/
   main.swift             app barra dei menu, QR, token, avvio al login
@@ -290,6 +295,10 @@ It reads the system playback info (`MediaRemote`, a private API). Since macOS 15
 
 ### Installation
 
+**No build needed:** download `MacRemote.zip` from the [Releases](https://github.com/jimmyxan/MacRemote/releases/latest) page, unzip it and move MacRemote to Applications. On first launch, right-click the app and choose Open (the app is not notarized by Apple). Requires a Mac with Apple silicon. To build it yourself, follow the steps below.
+
+**Building from source:**
+
 ```bash
 git clone https://github.com/jimmyxan/MacRemote.git
 cd MacRemote
@@ -351,6 +360,7 @@ Recommended: turn on **Start at login** in the MacRemote menu.
 Package.swift            Swift Package (no dependencies)
 build.sh                 builds and creates MacRemote.app (with icons)
 tools/make_icon.swift    generates the icons
+tools/release.sh         builds and zips MacRemote.zip for a GitHub Release
 tools/mediaremote.m      library that reads Now Playing (loaded by perl)
 Sources/MacRemote/
   main.swift             menu bar app, QR, token, start at login
