@@ -155,6 +155,14 @@ form button{flex:0 0 76px}
   </div>
 </section>
 
+<section class="card">
+  <p class="label">Chiudi</p>
+  <div class="row">
+    <button data-a="quit_app" data-confirm="Chiudere l'app in primo piano sul Mac?">App in uso</button>
+    <button data-a="quit_self" data-confirm="Chiudere MacRemote? Per riaprirlo servirà il Mac.">MacRemote</button>
+  </div>
+</section>
+
 <section class="card" id="pv" hidden>
   <div class="head"><p class="label">Anteprima schermo</p>
     <label class="sw"><input type="checkbox" id="pv-sw"><span></span></label></div>
@@ -208,7 +216,9 @@ document.querySelectorAll('button[data-a]').forEach(b=>{
   let t=null,d=null;
   const stop=()=>{clearTimeout(d);clearInterval(t);t=d=null;b.classList.remove('on')};
   b.addEventListener('pointerdown',e=>{
-    e.preventDefault();b.classList.add('on');send(b.dataset.a);
+    e.preventDefault();
+    if(b.dataset.confirm&&!confirm(b.dataset.confirm))return;
+    b.classList.add('on');send(b.dataset.a);
     if(b.hasAttribute('data-hold'))d=setTimeout(()=>{t=setInterval(()=>send(b.dataset.a),150)},400);
   });
   ['pointerup','pointercancel','pointerleave'].forEach(ev=>b.addEventListener(ev,stop));

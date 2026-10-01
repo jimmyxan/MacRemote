@@ -42,6 +42,7 @@ Sul Mac gira una piccola app nella barra dei menu. Sull'iPhone non installi null
 - **Navigazione**: frecce, OK (Invio), Esc, Tab, Maiusc+Tab, Spazio. Serve per muoversi tra gli elementi cliccabili senza mouse.
 - **Testo**: scrivi dall'iPhone nel campo attivo sul Mac.
 - **Schermo**: spegni il display (il Mac resta acceso) oppure blocca il Mac.
+- **Chiudi**: chiude l'app in primo piano (come ⌘Q: se c'è lavoro non salvato, l'app chiede prima) oppure chiude MacRemote stesso, per lasciare il Mac pulito prima della sospensione. Chiede conferma. Il Finder non si chiude. Dopo aver chiuso MacRemote serve il Mac per riaprirlo.
 - **Batteria del Mac** in alto nella pagina (percentuale, collegato o in carica).
 - **In riproduzione**: titolo, artista, copertina e barra di avanzamento di ciò che il Mac sta riproducendo, da qualsiasi fonte: YouTube, Netflix, Safari, Chrome, Music, Spotify. Titolo e copertina dipendono da ciò che il sito o l'app comunicano al sistema. Un contenuto in pausa resta visibile per 10 minuti. È solo in lettura, non si può spostare la barra.
 - **Anteprima dello schermo**: screenshot aggiornato ogni 1, 2 o 5 secondi. È **spenta di default**: si attiva con l'interruttore nella pagina, si spegne da sola chiudendo la pagina o dopo 15 secondi senza richieste. Con più schermi, tocca l'immagine per cambiare.
@@ -70,6 +71,7 @@ La pagina che si apre sull'iPhone. A sinistra la parte alta: volume, luminosità
 | Navigazione | Frecce, OK (Invio), Esc, Tab, Maiusc+Tab, Spazio |
 | Testo | Scrive sul Mac, con cancella e invio |
 | Schermo | Spegni il display o blocca il Mac |
+| Chiudi | Chiude l'app in primo piano o MacRemote, con conferma |
 | In riproduzione | Mostra titolo, artista, copertina e avanzamento (solo lettura) |
 | Anteprima schermo | Screenshot del Mac ogni 1, 2 o 5 secondi, spento di default |
 
@@ -210,6 +212,7 @@ A small menu bar app runs on the Mac. Nothing to install on the iPhone: you open
 - **Navigation**: arrows, OK (Return), Esc, Tab, Shift+Tab, Space. Use them to move between clickable elements without a mouse.
 - **Text**: type on the iPhone into the field that is focused on the Mac.
 - **Screen**: turn the display off (the Mac stays on) or lock the Mac.
+- **Close**: quits the frontmost app (like ⌘Q: with unsaved work, the app asks first) or quits MacRemote itself, to leave the Mac clean before sleep. Asks for confirmation. Finder is never closed. After quitting MacRemote you need the Mac to reopen it.
 - **Mac battery** at the top of the page (percentage, plugged in or charging).
 - **Now Playing**: title, artist, cover art and progress bar of whatever the Mac is playing, from any source: YouTube, Netflix, Safari, Chrome, Music, Spotify. Title and cover depend on what the site or app reports to the system. Paused content stays visible for 10 minutes. Read-only: you cannot seek.
 - **Screen preview**: a screenshot refreshed every 1, 2 or 5 seconds. It is **off by default**: switch it on in the page; it turns itself off when the page is closed or after 15 seconds without requests. With several displays, tap the image to switch.
@@ -238,6 +241,7 @@ The page that opens on the iPhone. Left: the top part, with volume, brightness (
 | Navigation | Arrows, OK (Return), Esc, Tab, Shift+Tab, Space |
 | Text | Types on the Mac, with backspace and send |
 | Screen | Turn the display off or lock the Mac |
+| Close | Quits the frontmost app or MacRemote, with confirmation |
 | Now Playing | Title, artist, cover art and progress (read-only) |
 | Screen preview | Screenshot of the Mac every 1, 2 or 5 seconds, off by default |
 

@@ -1,4 +1,5 @@
 import Foundation
+import AppKit
 import ApplicationServices
 
 final class Commands {
@@ -9,7 +10,7 @@ final class Commands {
 
     func run(_ action: String, _ value: String?) -> [String: Any] {
         queue.sync {
-            let needsAccessibility = !action.contains("bright") && action != "display_sleep"
+            let needsAccessibility = !action.contains("bright") && !["display_sleep", "quit_app", "quit_self"].contains(action)
             if needsAccessibility && !AXIsProcessTrusted() {
                 return ["ok": false, "info": "Permesso Accessibilità mancante: Impostazioni › Privacy › Accessibilità › MacRemote"]
             }
@@ -34,6 +35,17 @@ final class Commands {
                 Input.displaySleep()
             case "lock":
                 Input.lock()
+            case "quit_app":
+                // Same as Cmd+Q: apps with unsaved work still ask before closing.
+                guard let app = NSWorkspace.shared.frontmostApplication,
+                      app.processIdentifier != getpid(), app.bundleIdentifier != "com.apple.finder" else {
+                    return ["ok": false, "info": "Nessuna app da chiudere"]
+                }
+                app.terminate()
+                return ["ok": true, "info": "Chiusa: \(app.localizedName ?? "app")"]
+            case "quit_self":
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { NSApp.terminate(nil) }   // let the reply go out first
+                return ["ok": true, "info": "MacRemote chiuso"]
             default:
                 return ["ok": false, "info": "azione sconosciuta"]
             }
