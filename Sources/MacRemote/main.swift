@@ -46,7 +46,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             case "/screen":
                 do { return (200, "image/jpeg", try ScreenPreview.jpeg(display: Int(req.query["d"] ?? "") ?? 0)) }
                 catch let e as ScreenPreview.Failure { return (403, "text/plain; charset=utf-8", Data(e.message.utf8)) }
-                catch { return (500, "text/plain; charset=utf-8", Data("Cattura fallita".utf8)) }
+                catch { return (500, "text/plain; charset=utf-8", Data("Capture failed".utf8)) }
             default:
                 return nil
             }

@@ -12,7 +12,7 @@ final class Commands {
         queue.sync {
             let needsAccessibility = !action.contains("bright") && !["display_sleep", "quit_app", "quit_self"].contains(action)
             if needsAccessibility && !AXIsProcessTrusted() {
-                return ["ok": false, "info": "Permesso Accessibilità mancante: Impostazioni › Privacy › Accessibilità › MacRemote"]
+                return ["ok": false, "info": "Accessibility permission missing: System Settings › Privacy › Accessibility › MacRemote"]
             }
             if let k = Input.mediaKeys[action] {
                 Input.postMediaKey(k)
@@ -39,15 +39,15 @@ final class Commands {
                 // Same as Cmd+Q: apps with unsaved work still ask before closing.
                 guard let app = NSWorkspace.shared.frontmostApplication,
                       app.processIdentifier != getpid(), app.bundleIdentifier != "com.apple.finder" else {
-                    return ["ok": false, "info": "Nessuna app da chiudere"]
+                    return ["ok": false, "info": "No app to quit"]
                 }
                 app.terminate()
-                return ["ok": true, "info": "Chiusa: \(app.localizedName ?? "app")"]
+                return ["ok": true, "info": "Quit: \(app.localizedName ?? "app")"]
             case "quit_self":
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { NSApp.terminate(nil) }   // let the reply go out first
-                return ["ok": true, "info": "MacRemote chiuso"]
+                return ["ok": true, "info": "MacRemote quit"]
             default:
-                return ["ok": false, "info": "azione sconosciuta"]
+                return ["ok": false, "info": "Unknown action"]
             }
             return ["ok": true]
         }

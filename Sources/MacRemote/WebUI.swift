@@ -1,7 +1,7 @@
 enum WebUI {
     static let html = #"""
 <!doctype html>
-<html lang="it"><head>
+<html lang="en"><head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -14,6 +14,10 @@ enum WebUI {
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;touch-action:manipulation}
 body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.2 -apple-system,system-ui,sans-serif;
   padding:max(14px,env(safe-area-inset-top)) 16px max(28px,env(safe-area-inset-bottom));max-width:480px;margin-inline:auto}
+#lang{display:flex;background:var(--card);border-radius:99px;padding:3px;margin-right:8px}
+#lang span{font-size:12px;font-weight:700;color:var(--dim);padding:6px 10px;border-radius:99px}
+#lang span.sel{background:var(--btn-on);color:var(--fg)}
+.hr{display:flex;align-items:center}
 header{display:flex;align-items:center;justify-content:space-between;padding:4px 4px 14px}
 header h1{font-size:20px;font-weight:700;margin:0;letter-spacing:-.01em}
 #bat{display:none;align-items:center;gap:6px;font-size:14px;font-weight:600;color:var(--dim);background:var(--card);border-radius:99px;padding:7px 12px}
@@ -82,7 +86,7 @@ form button{flex:0 0 76px}
 <symbol id="lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></symbol>
 </defs></svg>
 
-<header><h1>MacRemote</h1><div id="bat"></div></header>
+<header><h1>MacRemote</h1><div class="hr"><div id="lang"><span data-l="en">EN</span><span data-l="it">IT</span></div><div id="bat"></div></div></header>
 
 <section class="card" id="np" hidden>
   <img id="np-art" alt="">
@@ -103,7 +107,7 @@ form button{flex:0 0 76px}
 </section>
 
 <section class="card" id="sec-bright">
-  <p class="label">Luminosità</p>
+  <p class="label" data-i18n="bright">Luminosità</p>
   <div class="row" id="sec-mac"><span class="name">Mac</span>
     <button data-a="bright_down" data-hold><svg class="i"><use href="#minus"/></svg></button>
     <button data-a="bright_up" data-hold><svg class="i"><use href="#sun"/></svg><svg class="i"><use href="#plus"/></svg></button>
@@ -124,7 +128,7 @@ form button{flex:0 0 76px}
 </section>
 
 <section class="card">
-  <p class="label">Navigazione</p>
+  <p class="label" data-i18n="nav">Navigazione</p>
   <div class="dpad">
     <button data-a="shift_tab">⇤ Tab</button>
     <button class="up" data-a="up" data-hold><svg class="i"><use href="#chev"/></svg></button>
@@ -134,37 +138,37 @@ form button{flex:0 0 76px}
     <button class="rt" data-a="right" data-hold><svg class="i"><use href="#chev"/></svg></button>
     <button data-a="esc">Esc</button>
     <button class="dn" data-a="down" data-hold><svg class="i"><use href="#chev"/></svg></button>
-    <button data-a="space">Spazio</button>
+    <button data-a="space"><span data-i18n="space">Space</span></button>
   </div>
 </section>
 
 <section class="card">
-  <p class="label">Testo</p>
+  <p class="label" data-i18n="text">Testo</p>
   <form id="tf">
-    <input id="ti" autocomplete="off" autocapitalize="off" autocorrect="off" placeholder="Scrivi sul Mac…">
+    <input id="ti" autocomplete="off" autocapitalize="off" autocorrect="off" placeholder="Type on the Mac…" data-i18n-ph="ph">
     <button data-a="backspace" type="button" style="flex:0 0 56px"><svg class="i"><use href="#back"/></svg></button>
-    <button class="accent" type="submit">Invia</button>
+    <button class="accent" type="submit"><span data-i18n="send">Send</span></button>
   </form>
 </section>
 
 <section class="card">
-  <p class="label">Schermo</p>
+  <p class="label" data-i18n="screen">Schermo</p>
   <div class="row">
-    <button data-a="display_sleep"><svg class="i"><use href="#moon"/></svg>Spegni</button>
-    <button data-a="lock"><svg class="i"><use href="#lock"/></svg>Blocca</button>
+    <button data-a="display_sleep"><svg class="i"><use href="#moon"/></svg><span data-i18n="off">Turn off</span></button>
+    <button data-a="lock"><svg class="i"><use href="#lock"/></svg><span data-i18n="lock">Lock</span></button>
   </div>
 </section>
 
 <section class="card">
-  <p class="label">Chiudi</p>
+  <p class="label" data-i18n="close">Chiudi</p>
   <div class="row">
-    <button data-a="quit_app" data-confirm="Chiudere l'app in primo piano sul Mac?">App in uso</button>
-    <button data-a="quit_self" data-confirm="Chiudere MacRemote? Per riaprirlo servirà il Mac.">MacRemote</button>
+    <button data-a="quit_app" data-confirm="confirmApp"><span data-i18n="app">Current app</span></button>
+    <button data-a="quit_self" data-confirm="confirmSelf">MacRemote</button>
   </div>
 </section>
 
 <section class="card" id="pv" hidden>
-  <div class="head"><p class="label">Anteprima schermo</p>
+  <div class="head"><p class="label" data-i18n="preview">Anteprima schermo</p>
     <label class="sw"><input type="checkbox" id="pv-sw"><span></span></label></div>
   <div id="pv-body" hidden>
     <img id="pv-img" alt="">
@@ -181,6 +185,44 @@ const p=new URLSearchParams(location.search);
 if(p.get('t'))try{localStorage.t=p.get('t')}catch(e){}
 const T=p.get('t')||(()=>{try{return localStorage.t}catch(e){}})()||'';
 const $=id=>document.getElementById(id);
+
+/* i18n: English is the default; Italian when the phone is set to Italian or the user picks it. */
+const L={
+ en:{bright:'Brightness',nav:'Navigation',text:'Text',screen:'Screen',close:'Close',preview:'Screen preview',space:'Space',send:'Send',off:'Turn off',lock:'Lock',app:'Current app',
+  ph:'Type on the Mac…',confirmApp:'Quit the frontmost app on the Mac?',confirmSelf:'Quit MacRemote? You will need the Mac to open it again.',
+  err:'Error ',unreachable:'Mac unreachable',failed:'Command failed',pvUnavailable:'Preview unavailable',media:'Media content',
+  hint:(i,n)=>'Tap the image to switch display ('+i+'/'+n+')'},
+ it:{bright:'Luminosità',nav:'Navigazione',text:'Testo',screen:'Schermo',close:'Chiudi',preview:'Anteprima schermo',space:'Spazio',send:'Invia',off:'Spegni',lock:'Blocca',app:'App in uso',
+  ph:'Scrivi sul Mac…',confirmApp:"Chiudere l'app in primo piano sul Mac?",confirmSelf:'Chiudere MacRemote? Per riaprirlo servirà il Mac.',
+  err:'Errore ',unreachable:'Mac non raggiungibile',failed:'Comando fallito',pvUnavailable:'Anteprima non disponibile',media:'Contenuto multimediale',
+  hint:(i,n)=>"Tocca l'immagine per cambiare schermo ("+i+'/'+n+')'}};
+/* Messages coming from the Mac are English; these pairs translate them (substring replace). */
+const SRV=[['Accessibility permission missing: System Settings › Privacy › Accessibility','Permesso Accessibilità mancante: Impostazioni › Privacy › Accessibilità'],
+ ['Screen Recording permission missing: System Settings › Privacy › Screen Recording','Permesso Registrazione schermo mancante: Impostazioni › Privacy › Registrazione schermo'],
+ ['Screen Recording permission missing','Permesso Registrazione schermo mancante'],['Preview off','Anteprima disattivata'],['No display','Nessuno schermo'],
+ ['Screen capture timed out','Timeout cattura schermo'],['Encoding failed','Codifica fallita'],['Capture failed','Cattura fallita'],
+ ['Mac display not active','Schermo Mac non attivo'],['No external monitor','Nessun monitor esterno'],['Mac display','Schermo Mac'],
+ ['brightness not controllable','luminosità non controllabile'],['No app to quit','Nessuna app da chiudere'],['Quit: ','Chiusa: '],
+ ['MacRemote quit','MacRemote chiuso'],['Unknown action','Azione sconosciuta']];
+function pickLang(stored,prefs){
+  if(stored==='en'||stored==='it')return stored;
+  for(const l of prefs||[])if(/^it\b/i.test(l))return 'it';
+  return 'en';
+}
+let lang=pickLang((()=>{try{return localStorage.lang}catch(e){}})(),navigator.languages||[navigator.language]);
+const t=k=>L[lang][k];
+const srv=m=>lang==='it'?SRV.reduce((x,[a,b])=>x.split(a).join(b),m):m;
+function applyLang(){
+  document.documentElement.lang=lang;
+  document.querySelectorAll('[data-i18n]').forEach(e=>e.textContent=t(e.dataset.i18n));
+  document.querySelectorAll('[data-i18n-ph]').forEach(e=>e.placeholder=t(e.dataset.i18nPh));
+  document.querySelectorAll('#lang span').forEach(e=>e.classList.toggle('sel',e.dataset.l===lang));
+  if(typeof pvHint==='function')pvHint();
+  if(typeof drawNP==='function'&&np&&np.active)$('np-title').textContent=np.title||t('media');
+}
+document.querySelectorAll('#lang span').forEach(e=>e.addEventListener('click',()=>{
+  lang=e.dataset.l;try{localStorage.lang=lang}catch(x){}applyLang();
+}));
 let toastTimer;
 function toast(text,err){
   if(!text)return;
@@ -190,10 +232,10 @@ function toast(text,err){
 async function send(action,value){
   try{
     const r=await fetch('/cmd',{method:'POST',headers:{'X-Token':T},body:JSON.stringify({action,value})});
-    if(!r.ok)return toast('Errore '+r.status,true);
+    if(!r.ok)return toast(t('err')+r.status,true);
     const j=await r.json();
-    if(!j.ok)toast(j.info||'Comando fallito',true);else toast(j.info);
-  }catch(e){toast('Mac non raggiungibile',true)}
+    if(!j.ok)toast(srv(j.info||t('failed')),true);else toast(srv(j.info||''));
+  }catch(e){toast(t('unreachable'),true)}
 }
 async function status(){
   try{
@@ -213,13 +255,13 @@ async function status(){
 status();setInterval(status,15000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)status()});
 document.querySelectorAll('button[data-a]').forEach(b=>{
-  let t=null,d=null;
-  const stop=()=>{clearTimeout(d);clearInterval(t);t=d=null;b.classList.remove('on')};
+  let rep=null,d=null;   // not `t`: that would shadow the translate function t()
+  const stop=()=>{clearTimeout(d);clearInterval(rep);rep=d=null;b.classList.remove('on')};
   b.addEventListener('pointerdown',e=>{
     e.preventDefault();
-    if(b.dataset.confirm&&!confirm(b.dataset.confirm))return;
+    if(b.dataset.confirm&&!confirm(t(b.dataset.confirm)))return;
     b.classList.add('on');send(b.dataset.a);
-    if(b.hasAttribute('data-hold'))d=setTimeout(()=>{t=setInterval(()=>send(b.dataset.a),150)},400);
+    if(b.hasAttribute('data-hold'))d=setTimeout(()=>{rep=setInterval(()=>send(b.dataset.a),150)},400);
   });
   ['pointerup','pointercancel','pointerleave'].forEach(ev=>b.addEventListener(ev,stop));
 });
@@ -235,7 +277,7 @@ async function pollNP(){
     np=await r.json();npAt=performance.now();
     $('np').hidden=!np.active;
     if(!np.active)return;
-    $('np-title').textContent=np.title;
+    $('np-title').textContent=np.title||t('media');
     $('np-artist').textContent=[np.artist,np.album].filter(Boolean).join(' · ');
     if(np.art!==npKey||!npArt){
       if(np.art!==npKey){npKey=np.art;npArt=false;$('np-art').removeAttribute('src')}
@@ -264,7 +306,7 @@ async function pvTick(){
   try{
     const r=await fetch('/screen?d='+pv.d+'&_='+Date.now(),{headers:{'X-Token':T}});
     if(!pv.on)return;
-    if(!r.ok){toast(await r.text(),true);return pvSet(false)}
+    if(!r.ok){toast(srv(await r.text()),true);return pvSet(false)}
     pvShow(URL.createObjectURL(await r.blob()));
   }catch(e){}
   if(pv.on)pv.timer=setTimeout(pvTick,pv.iv);
@@ -276,15 +318,15 @@ async function pvSet(on){
     try{
       const r=await fetch('/cmd',{method:'POST',headers:{'X-Token':T},body:JSON.stringify({action:'preview_on'})});
       const j=await r.json();
-      if(!j.ok){toast(j.info||'Anteprima non disponibile',true);$('pv-sw').checked=false;$('pv-body').hidden=true;return}
-    }catch(e){toast('Mac non raggiungibile',true);$('pv-sw').checked=false;$('pv-body').hidden=true;return}
+      if(!j.ok){toast(srv(j.info||t('pvUnavailable')),true);$('pv-sw').checked=false;$('pv-body').hidden=true;return}
+    }catch(e){toast(t('unreachable'),true);$('pv-sw').checked=false;$('pv-body').hidden=true;return}
     pv.on=true;pvTick();
   }else{
     pvShow(null);
     try{fetch('/cmd',{method:'POST',headers:{'X-Token':T},body:JSON.stringify({action:'preview_off'}),keepalive:true})}catch(e){}
   }
 }
-function pvHint(){$('pv-hint').textContent=pv.n>1?'Tocca l’immagine per cambiare schermo ('+(pv.d%pv.n+1)+'/'+pv.n+')':''}
+function pvHint(){$('pv-hint').textContent=pv.n>1?t('hint')(pv.d%pv.n+1,pv.n):''}
 $('pv-sw').addEventListener('change',e=>pvSet(e.target.checked));
 $('pv-img').addEventListener('click',()=>{if(pv.n>1){pv.d=(pv.d+1)%pv.n;pvHint();clearTimeout(pv.timer);pvTick()}});
 document.querySelectorAll('#pv-iv button').forEach(b=>b.addEventListener('click',()=>{
@@ -296,6 +338,7 @@ $('tf').addEventListener('submit',e=>{
   e.preventDefault();const i=$('ti');
   if(i.value){send('text',i.value);i.value=''}
 });
+applyLang();
 </script></body></html>
 """#
 }

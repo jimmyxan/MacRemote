@@ -86,7 +86,7 @@ final class Brightness {
     func adjust(up: Bool, target: String) -> String {
         let builtin = target == "mac"
         let ids = Self.displays().filter { (CGDisplayIsBuiltin($0) != 0) == builtin }
-        guard !ids.isEmpty else { return builtin ? "Schermo Mac non attivo" : "Nessun monitor esterno" }
+        guard !ids.isEmpty else { return builtin ? "Mac display not active" : "No external monitor" }
 
         // DisplayServices drives the same brightness as the macOS slider, one display at a time.
         var failed: [CGDirectDisplayID] = []
@@ -107,11 +107,11 @@ final class Brightness {
             }
             failed.append(id)
         }
-        let name = builtin ? "Schermo Mac" : "Monitor"
+        let name = builtin ? "Mac display" : "Monitor"
         if !failed.isEmpty, !builtin, let msg = adjustExternal(up: up, displays: failed) {
             return "\(name) \(msg)"
         }
-        return levels.isEmpty ? "\(name): luminosità non controllabile" : "\(name) \(levels[0])%"
+        return levels.isEmpty ? "\(name): brightness not controllable" : "\(name) \(levels[0])%"
     }
 
     /// Undo any software dimming left from a previous run.

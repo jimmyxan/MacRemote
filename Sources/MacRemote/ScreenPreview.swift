@@ -16,7 +16,7 @@ enum ScreenPreview {
     static func setEnabled(_ on: Bool) -> [String: Any] {
         if on && !CGPreflightScreenCaptureAccess() {
             CGRequestScreenCaptureAccess()
-            return ["ok": false, "info": "Permesso Registrazione schermo mancante: Impostazioni › Privacy › Registrazione schermo › MacRemote"]
+            return ["ok": false, "info": "Screen Recording permission missing: System Settings › Privacy › Screen Recording › MacRemote"]
         }
         lock.lock()
         enabledUntil = on ? Date().addingTimeInterval(lease) : .distantPast
@@ -39,8 +39,8 @@ enum ScreenPreview {
     }
 
     static func jpeg(display index: Int, maxWidth: Int = 1280) throws -> Data {
-        guard touch() else { throw Failure(message: "Anteprima disattivata") }
-        guard CGPreflightScreenCaptureAccess() else { throw Failure(message: "Permesso Registrazione schermo mancante") }
+        guard touch() else { throw Failure(message: "Preview off") }
+        guard CGPreflightScreenCaptureAccess() else { throw Failure(message: "Screen Recording permission missing") }
 
         let sem = DispatchSemaphore(value: 0)
         var result: Result<CGImage, Error> = .failure(Failure(message: "Timeout"))
@@ -49,7 +49,7 @@ enum ScreenPreview {
                 let content = try await SCShareableContent.excludingDesktopWindows(false, onScreenWindowsOnly: true)
                 let main = CGMainDisplayID()
                 let displays = content.displays.sorted { ($0.displayID == main ? 0 : 1, $0.displayID) < ($1.displayID == main ? 0 : 1, $1.displayID) }
-                guard !displays.isEmpty else { throw Failure(message: "Nessuno schermo") }
+                guard !displays.isEmpty else { throw Failure(message: "No display") }
                 let d = displays[((index % displays.count) + displays.count) % displays.count]
                 let cfg = SCStreamConfiguration()
                 let scale = min(1.0, Double(maxWidth) / Double(d.width))
@@ -62,15 +62,15 @@ enum ScreenPreview {
             } catch { result = .failure(error) }
             sem.signal()
         }
-        if sem.wait(timeout: .now() + 6) == .timedOut { throw Failure(message: "Timeout cattura schermo") }
+        if sem.wait(timeout: .now() + 6) == .timedOut { throw Failure(message: "Screen capture timed out") }
         let image = try result.get()
 
         let out = NSMutableData()
         guard let dest = CGImageDestinationCreateWithData(out, UTType.jpeg.identifier as CFString, 1, nil) else {
-            throw Failure(message: "Codifica fallita")
+            throw Failure(message: "Encoding failed")
         }
         CGImageDestinationAddImage(dest, image, [kCGImageDestinationLossyCompressionQuality: 0.55] as CFDictionary)
-        guard CGImageDestinationFinalize(dest) else { throw Failure(message: "Codifica fallita") }
+        guard CGImageDestinationFinalize(dest) else { throw Failure(message: "Encoding failed") }
         return out as Data
     }
 }

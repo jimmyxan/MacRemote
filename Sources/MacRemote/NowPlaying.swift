@@ -110,7 +110,7 @@ enum NowPlaying {
             artCache[key] = (mime, data)
             lock.unlock()
         }
-        return ["active": true, "playing": playing, "title": title.isEmpty ? "Contenuto multimediale" : title,
+        return ["active": true, "playing": playing, "title": title,
                 "artist": artist, "album": album, "duration": duration, "position": position, "art": key]
     }
 

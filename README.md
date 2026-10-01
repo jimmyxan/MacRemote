@@ -42,6 +42,7 @@ Sul Mac gira una piccola app nella barra dei menu. Sull'iPhone non installi null
 - **Navigazione**: frecce, OK (Invio), Esc, Tab, Maiusc+Tab, Spazio. Serve per muoversi tra gli elementi cliccabili senza mouse.
 - **Testo**: scrivi dall'iPhone nel campo attivo sul Mac.
 - **Schermo**: spegni il display (il Mac resta acceso) oppure blocca il Mac.
+- **Lingua**: la pagina è in inglese di default e c'è l'italiano. Si sceglie la lingua in automatico dalla lingua del telefono; il selettore EN/IT in alto permette di cambiarla e la scelta viene ricordata. Il menu e la finestra del QR sul Mac restano in italiano.
 - **Chiudi**: chiude l'app in primo piano (come ⌘Q: se c'è lavoro non salvato, l'app chiede prima) oppure chiude MacRemote stesso, per lasciare il Mac pulito prima della sospensione. Chiede conferma. Il Finder non si chiude. Dopo aver chiuso MacRemote serve il Mac per riaprirlo.
 - **Batteria del Mac** in alto nella pagina (percentuale, collegato o in carica).
 - **In riproduzione**: titolo, artista, copertina e barra di avanzamento di ciò che il Mac sta riproducendo, da qualsiasi fonte: YouTube, Netflix, Safari, Chrome, Music, Spotify. Titolo e copertina dipendono da ciò che il sito o l'app comunicano al sistema. Un contenuto in pausa resta visibile per 10 minuti. È solo in lettura, non si può spostare la barra.
@@ -212,6 +213,7 @@ A small menu bar app runs on the Mac. Nothing to install on the iPhone: you open
 - **Navigation**: arrows, OK (Return), Esc, Tab, Shift+Tab, Space. Use them to move between clickable elements without a mouse.
 - **Text**: type on the iPhone into the field that is focused on the Mac.
 - **Screen**: turn the display off (the Mac stays on) or lock the Mac.
+- **Language**: the page is in English by default, with Italian available. The language is picked automatically from the phone's language; the EN/IT switch at the top changes it and the choice is remembered. The Mac menu and QR window stay in Italian.
 - **Close**: quits the frontmost app (like ⌘Q: with unsaved work, the app asks first) or quits MacRemote itself, to leave the Mac clean before sleep. Asks for confirmation. Finder is never closed. After quitting MacRemote you need the Mac to reopen it.
 - **Mac battery** at the top of the page (percentage, plugged in or charging).
 - **Now Playing**: title, artist, cover art and progress bar of whatever the Mac is playing, from any source: YouTube, Netflix, Safari, Chrome, Music, Spotify. Title and cover depend on what the site or app reports to the system. Paused content stays visible for 10 minutes. Read-only: you cannot seek.
@@ -278,7 +280,7 @@ These are private APIs, so a macOS update could break them.
 
 It reads the system playback info (`MediaRemote`, a private API). Since macOS 15.4 Apple denies it to third-party apps, but not to `/usr/bin/perl`, which is signed by Apple. MacRemote therefore runs perl with a small library (`tools/mediaremote.m`, built by `build.sh` into the app) that reads the title and prints it. No permission is needed. If the library is missing (for example with a plain `swift build`), it falls back to AppleScript, which reads only Music and Spotify and needs the Automation permission.
 
-> Note: the app menu and the web page labels are currently in Italian.
+> Note: the Mac menu and QR window are currently in Italian. The web page is in English or Italian, chosen from the phone's language.
 
 ### Requirements
 
@@ -323,16 +325,16 @@ Recommended: turn on **Start at login** in the MacRemote menu.
 
 | Problem | Fix |
 | --- | --- |
-| Buttons do nothing, the page says "Permesso Accessibilità mancante" (Accessibility permission missing) | Enable MacRemote in Accessibility, then quit and reopen the app. If that is not enough, remove the entry with "−" and add it again. |
+| Buttons do nothing, the page says "Accessibility permission missing" ("Permesso Accessibilità mancante" in Italian) | Enable MacRemote in Accessibility, then quit and reopen the app. If that is not enough, remove the entry with "−" and add it again. |
 | The iPhone cannot connect | Same Wi-Fi? Did you accept "Local Network"? Some routers isolate clients (AP isolation). |
 | Volume does not change | If audio plays through an HDMI/DP monitor with fixed volume, the Mac cannot change it. |
 | Monitor brightness does not change | See "How brightness works". Software dimming is the fallback. |
 | The link stopped working | You regenerated the token: scan the QR again. |
 | I cannot see the menu bar icon and double-clicking the app does nothing | A menu bar manager (for example **Hidden Bar**) can hide new icons: MacRemote is running but invisible. Quit that app, or hold ⌘ and drag the MacRemote icon into the always-visible area. Meanwhile, double-clicking MacRemote reopens the QR window, which has a "Esci da MacRemote" (Quit) button (it may open on the other display). |
-| Preview says "Permesso Registrazione schermo mancante" (Screen Recording permission missing) | Enable MacRemote in Screen Recording, then quit and reopen the app. If macOS does not list it, turn the switch on once so it appears. |
-| Preview says "Anteprima disattivata" (preview off) | The Mac turned it off because no requests arrived for 15 seconds (page in the background, Wi-Fi lost). Turn the switch on again. |
+| Preview says "Screen Recording permission missing" ("Permesso Registrazione schermo mancante" in Italian) | Enable MacRemote in Screen Recording, then quit and reopen the app. If macOS does not list it, turn the switch on once so it appears. |
+| Preview says "Preview off" ("Anteprima disattivata" in Italian) | The Mac turned it off because no requests arrived for 15 seconds (page in the background, Wi-Fi lost). Turn the switch on again. |
 | Now Playing does not appear | The content has been paused for more than 10 minutes, or nothing is playing. Press play: the card returns within 2 seconds. |
-| Now Playing shows "Contenuto multimediale" (media content) with no cover | The source does not report title and cover to the system (some sites and players). Everything else works. |
+| Now Playing shows "Media content" (or "Contenuto multimediale" in Italian) with no cover | The source does not report title and cover to the system (some sites and players). Everything else works. |
 | Now Playing shows only Music and Spotify | The app was built with `swift build` and the library is missing. Build with `./build.sh`. |
 
 ### Security
