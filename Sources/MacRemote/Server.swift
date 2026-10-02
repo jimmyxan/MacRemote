@@ -7,6 +7,7 @@ final class Server {
     private var listener: NWListener?
     private let queue = DispatchQueue(label: "macremote.server")
     private var recent: [Date] = []
+    private var recentPointer: [Date] = []
     let token: () -> String
     let handler: (String, String?) -> [String: Any]
     /// Slow GET resources (now playing, artwork, screenshots): (status, content type, body) or nil for 404. Runs off the server queue.
@@ -49,10 +50,9 @@ final class Server {
     }
 
     private func respond(_ conn: NWConnection, to req: HTTPRequest) {
-        let now = Date()
-        recent = recent.filter { now.timeIntervalSince($0) < 1 }
-        if recent.count >= 40 { return send(conn, 429, "text/plain", "slow down") }
-        recent.append(now)
+        // The trackpad streams small batches back to back, so it gets its own, larger budget.
+        let admitted = req.path == "/pointer" ? Self.admit(&recentPointer, limit: 150) : Self.admit(&recent, limit: 40)
+        if !admitted { return send(conn, 429, "text/plain", "slow down") }
 
         if req.method == "GET", req.path == "/icon.png" {
             guard let url = Bundle.main.url(forResource: "touch-icon", withExtension: "png"),
@@ -77,6 +77,10 @@ final class Server {
             let result = handler(action, obj["value"] as? String)
             let json = (try? JSONSerialization.data(withJSONObject: result)) ?? Data("{}".utf8)
             send(conn, 200, "application/json", json)
+        case ("POST", "/pointer"):
+            let result = handler("pointer", String(decoding: req.body, as: UTF8.self))
+            let json = (try? JSONSerialization.data(withJSONObject: result)) ?? Data("{}".utf8)
+            send(conn, 200, "application/json", json)
         case ("GET", _):
             DispatchQueue.global().async { [self] in
                 if let (status, type, body) = resource(req) { send(conn, status, type, body) }
@@ -85,6 +89,14 @@ final class Server {
         default:
             send(conn, 404, "text/plain", "not found")
         }
+    }
+
+    private static func admit(_ log: inout [Date], limit: Int) -> Bool {
+        let now = Date()
+        log = log.filter { now.timeIntervalSince($0) < 1 }
+        guard log.count < limit else { return false }
+        log.append(now)
+        return true
     }
 
     private func send(_ conn: NWConnection, _ status: Int, _ type: String, _ body: String) {

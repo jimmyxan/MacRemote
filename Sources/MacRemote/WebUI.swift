@@ -66,6 +66,24 @@ form button{flex:0 0 76px}
 #pv-iv button{min-height:40px;font-size:14px;border-radius:12px}
 #pv-iv button.sel{background:var(--accent);color:#fff}
 #pv-hint{font-size:12px;color:var(--dim);margin:8px 4px 0;text-align:center}
+#tp{position:relative;aspect-ratio:16/10;border-radius:18px;background:var(--btn);overflow:hidden;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.05);transition:box-shadow .2s;-webkit-touch-callout:none}
+#tp.on{touch-action:none;box-shadow:inset 0 0 0 1px rgba(124,124,255,.4)}
+#tp.drag{box-shadow:inset 0 0 0 2px var(--accent)}
+#tp-lock{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
+  background:rgba(0,0,0,.28);transition:opacity .25s}
+#tp.on #tp-lock{opacity:0;pointer-events:none}
+#tp-go{flex:0 0 auto;min-height:44px;padding:0 20px;border-radius:99px;font-size:15px;background:rgba(255,255,255,.1);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.16);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+#tp-go:active{background:rgba(255,255,255,.18)}
+#tp-go .i{width:18px;height:18px}
+#tp-help{margin:0;padding:0 14px;font-size:11.5px;line-height:1.55;color:var(--dim);text-align:center}
+#tp .dot{position:absolute;left:0;top:0;width:40px;height:40px;margin:-20px 0 0 -20px;border-radius:50%;
+  background:rgba(255,255,255,.12);pointer-events:none}
+#tp.drag .dot{background:rgba(124,124,255,.45)}
+.tp-btns{margin-top:8px}
+.tp-btns button{min-height:44px;font-size:14px;border-radius:12px;transition:transform .08s,background .12s,opacity .2s}
+#tp-card.off .tp-btns button{opacity:.35;pointer-events:none}
 #toast{position:fixed;left:50%;top:max(10px,env(safe-area-inset-top));transform:translate(-50%,-80px);background:rgba(44,44,48,.95);
   -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);padding:10px 16px;border-radius:99px;font-size:14px;font-weight:600;
   transition:transform .25s;pointer-events:none;max-width:90%;text-align:center}
@@ -84,6 +102,7 @@ form button{flex:0 0 76px}
 <symbol id="back" viewBox="0 0 24 24"><path d="M21 5H9l-6 7 6 7h12z"/><path d="m14 9 4 6m0-6-4 6"/></symbol>
 <symbol id="moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/></symbol>
 <symbol id="lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></symbol>
+<symbol id="cur" viewBox="0 0 24 24"><path d="M5 3.5 19 10l-6.2 2.1L10.5 19z"/></symbol>
 </defs></svg>
 
 <header><h1>MacRemote</h1><div class="hr"><div id="lang"><span data-l="en">EN</span><span data-l="it">IT</span></div><div id="bat"></div></div></header>
@@ -124,6 +143,20 @@ form button{flex:0 0 76px}
     <button data-a="prev"><svg class="i"><use href="#prev"/></svg></button>
     <button class="accent" data-a="play"><svg class="i"><use href="#play"/></svg></button>
     <button data-a="next"><svg class="i"><use href="#next"/></svg></button>
+  </div>
+</section>
+
+<section class="card off" id="tp-card">
+  <p class="label">Trackpad</p>
+  <div id="tp">
+    <div id="tp-lock">
+      <button id="tp-go" type="button"><svg class="i"><use href="#cur"/></svg><span id="tp-go-l" data-i18n="tpStart">Activate trackpad</span></button>
+      <p id="tp-help"><span data-i18n="tpH1"></span><br><span data-i18n="tpH2"></span><br><span data-i18n="tpH3"></span></p>
+    </div>
+  </div>
+  <div class="row tp-btns">
+    <button id="tp-l" type="button"><span data-i18n="click">Click</span></button>
+    <button id="tp-r" type="button"><span data-i18n="rclick">Right click</span></button>
   </div>
 </section>
 
@@ -191,11 +224,15 @@ const L={
  en:{bright:'Brightness',nav:'Navigation',text:'Text',screen:'Screen',close:'Close',preview:'Screen preview',space:'Space',send:'Send',off:'Turn off',lock:'Lock',app:'Current app',
   ph:'Type on the Mac…',confirmApp:'Quit the frontmost app on the Mac?',confirmSelf:'Quit MacRemote? You will need the Mac to open it again.',
   err:'Error ',unreachable:'Mac unreachable',failed:'Command failed',pvUnavailable:'Preview unavailable',media:'Media content',
-  hint:(i,n)=>'Tap the image to switch display ('+i+'/'+n+')'},
+  hint:(i,n)=>'Tap the image to switch display ('+i+'/'+n+')',
+  tpStart:'Activate trackpad',tpResume:'Resume',click:'Click',rclick:'Right click',
+  tpH1:'1 finger: move · tap: click · hold: drag',tpH2:'2 fingers: scroll · tap: right click',tpH3:'3 fingers: swipe for Spaces and Mission Control'},
  it:{bright:'Luminosità',nav:'Navigazione',text:'Testo',screen:'Schermo',close:'Chiudi',preview:'Anteprima schermo',space:'Spazio',send:'Invia',off:'Spegni',lock:'Blocca',app:'App in uso',
   ph:'Scrivi sul Mac…',confirmApp:"Chiudere l'app in primo piano sul Mac?",confirmSelf:'Chiudere MacRemote? Per riaprirlo servirà il Mac.',
   err:'Errore ',unreachable:'Mac non raggiungibile',failed:'Comando fallito',pvUnavailable:'Anteprima non disponibile',media:'Contenuto multimediale',
-  hint:(i,n)=>"Tocca l'immagine per cambiare schermo ("+i+'/'+n+')'}};
+  hint:(i,n)=>"Tocca l'immagine per cambiare schermo ("+i+'/'+n+')',
+  tpStart:'Attiva trackpad',tpResume:'Riprendi',click:'Clic',rclick:'Clic destro',
+  tpH1:'1 dito: muovi · tocca: clic · tieni: trascina',tpH2:'2 dita: scorri · tocca: clic destro',tpH3:'3 dita: swipe per Spazi e Mission Control'}};
 /* Messages coming from the Mac are English; these pairs translate them (substring replace). */
 const SRV=[['Accessibility permission missing: System Settings › Privacy › Accessibility','Permesso Accessibilità mancante: Impostazioni › Privacy › Accessibilità'],
  ['Screen Recording permission missing: System Settings › Privacy › Screen Recording','Permesso Registrazione schermo mancante: Impostazioni › Privacy › Registrazione schermo'],
@@ -334,6 +371,145 @@ document.querySelectorAll('#pv-iv button').forEach(b=>b.addEventListener('click'
 }));
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&pv.on)pvSet(false)});
 window.addEventListener('pagehide',()=>{if(pv.on)pvSet(false)});
+
+/* Trackpad: locked until the pill is tapped, relocks after 20 s without touches.
+   Gestures become small ops (see Pointer.swift), coalesced and sent one request at a time. */
+const TP={idle:20000,hold:400,tap:300,dead:3,scrollDead:8,swipe:40,sens:1.25,scroll:1.5,friction:.9965};
+const tp={on:false,q:[],busy:false,last:0,idle:null,raf:0,pts:new Map(),s:null,btn:false};
+const pad=$('tp');
+/* Pointer acceleration: slow strokes stay precise, fast flicks cross the screen. v in px/ms. */
+const tpGain=v=>TP.sens*(1+2.2*Math.min(1,Math.max(0,(v-.08)/1.1)));
+function tpPush(op){
+  const l=tp.q[tp.q.length-1];
+  if(l&&l[0]===op[0]&&(op[0]==='m'||op[0]==='s')){l[1]+=op[1];l[2]+=op[2]}else tp.q.push(op);
+  tpFlush();
+}
+async function tpFlush(){
+  if(tp.busy||!tp.q.length)return;
+  const wait=12-(performance.now()-tp.last);
+  if(wait>0){tp.busy=true;setTimeout(()=>{tp.busy=false;tpFlush()},wait);return}
+  tp.busy=true;tp.last=performance.now();
+  const ops=tp.q.map(o=>o.map(v=>typeof v==='number'?Math.round(v*100)/100:v));tp.q=[];
+  try{
+    const r=await fetch('/pointer',{method:'POST',headers:{'X-Token':T},body:JSON.stringify(ops)});
+    if(r.ok){const j=await r.json();if(!j.ok){toast(srv(j.info||t('failed')),true);tpLock()}}
+    else if(r.status!==429){toast(t('err')+r.status,true);tpLock()}
+  }catch(e){toast(t('unreachable'),true);tpLock()}
+  tp.busy=false;tpFlush();
+}
+function tpWake(){clearTimeout(tp.idle);tp.idle=setTimeout(tpLock,TP.idle)}
+function tpUnlock(){
+  if(document.activeElement)document.activeElement.blur();   // a focused field would turn 3 fingers into iOS undo
+  tp.on=true;pad.classList.add('on');$('tp-card').classList.remove('off');tpWake();
+}
+function tpLock(){
+  if(!tp.on)return;
+  tp.on=false;clearTimeout(tp.idle);tpStopInertia();
+  const held=(tp.s&&tp.s.held)||tp.btn;
+  if(tp.s)clearTimeout(tp.s.hold);
+  tp.s=null;tp.btn=false;$('tp-l').classList.remove('on');
+  tp.pts.forEach(p=>p.dot.remove());tp.pts.clear();
+  tp.q=held?[['u']]:[];tpFlush();
+  pad.classList.remove('on','drag');$('tp-card').classList.add('off');
+  const l=$('tp-go-l');l.dataset.i18n='tpResume';l.textContent=t('tpResume');
+}
+function tpInertia(vx,vy){
+  if(Math.hypot(vx,vy)<.2)return;
+  let last=performance.now();
+  const step=now=>{
+    const dt=Math.min(50,now-last),f=Math.pow(TP.friction,dt);last=now;
+    vx*=f;vy*=f;tpPush(['s',vx*dt,vy*dt]);
+    tp.raf=Math.hypot(vx,vy)>.02?requestAnimationFrame(step):0;
+  };
+  tp.raf=requestAnimationFrame(step);
+}
+function tpStopInertia(){cancelAnimationFrame(tp.raf);tp.raf=0}
+function tpDot(p){
+  const r=pad.getBoundingClientRect();
+  p.dot.style.transform='translate('+(p.x-r.left)+'px,'+(p.y-r.top)+'px)';
+}
+pad.addEventListener('pointerdown',e=>{
+  if(!tp.on)return;
+  e.preventDefault();
+  try{pad.setPointerCapture(e.pointerId)}catch(x){}
+  tpWake();tpStopInertia();tp.q=tp.q.filter(o=>o[0]!=='s');   // a new touch stops any momentum
+  if(!tp.pts.size)tp.s={t0:e.timeStamp,max:0,mode:'move',lead:e.pointerId,travel:0,moved:false,held:false,swiped:false,bx:0,by:0,gx:0,gy:0,hist:[],hold:0};
+  const s=tp.s,p={x:e.clientX,y:e.clientY,t:e.timeStamp,dot:document.createElement('i')};
+  p.dot.className='dot';pad.appendChild(p.dot);tpDot(p);
+  tp.pts.set(e.pointerId,p);
+  s.max=Math.max(s.max,tp.pts.size);
+  clearTimeout(s.hold);
+  if(s.held)return;   // while dragging, extra fingers are ignored
+  s.mode=s.max>=3?'swipe':s.max===2?'scroll':'move';
+  if(s.max===1)s.hold=setTimeout(()=>{
+    if(tp.s===s&&!s.moved&&tp.pts.size===1){s.held=true;pad.classList.add('drag');tpPush(['d'])}
+  },TP.hold);
+});
+pad.addEventListener('pointermove',e=>{
+  const p=tp.pts.get(e.pointerId),s=tp.s;
+  if(!p||!s)return;
+  const dx=e.clientX-p.x,dy=e.clientY-p.y,dt=Math.max(1,e.timeStamp-p.t);
+  p.x=e.clientX;p.y=e.clientY;p.t=e.timeStamp;
+  if(!dx&&!dy)return;
+  tpDot(p);tpWake();
+  const n=tp.pts.size;
+  s.travel+=Math.hypot(dx,dy);
+  if(s.mode==='move'||s.held){
+    if(e.pointerId!==s.lead)return;
+    if(!s.moved){   // small dead zone: a tap must not nudge the cursor off its target
+      s.bx+=dx;s.by+=dy;
+      if(s.travel<TP.dead)return;
+      s.moved=true;clearTimeout(s.hold);
+      return tpPush(['m',s.bx*TP.sens,s.by*TP.sens]);
+    }
+    const g=tpGain(Math.hypot(dx,dy)/dt);
+    tpPush(['m',dx*g,dy*g]);
+  }else if(s.mode==='scroll'){
+    if(n<2)return;
+    if(!s.moved){if(s.travel<TP.scrollDead)return;s.moved=true}
+    const sx=dx/n*TP.scroll,sy=dy/n*TP.scroll;   // each finger moves the centroid by 1/n
+    s.hist.push([e.timeStamp,sx,sy]);
+    while(e.timeStamp-s.hist[0][0]>100)s.hist.shift();
+    tpPush(['s',sx,sy]);
+  }else if(!s.swiped){
+    s.gx+=dx/n;s.gy+=dy/n;
+    if(Math.hypot(s.gx,s.gy)>TP.swipe){
+      s.swiped=s.moved=true;
+      tpPush(['g',Math.abs(s.gx)>Math.abs(s.gy)?(s.gx<0?'l':'r'):(s.gy<0?'u':'d')]);
+    }
+  }
+});
+function tpUp(e){
+  const p=tp.pts.get(e.pointerId),s=tp.s;
+  if(!p)return;
+  p.dot.remove();tp.pts.delete(e.pointerId);
+  if(tp.pts.size||!s)return;
+  clearTimeout(s.hold);tp.s=null;
+  if(s.held){pad.classList.remove('drag');return tpPush(['u'])}
+  if(e.type==='pointercancel')return;
+  if(!s.moved&&e.timeStamp-s.t0<TP.tap){
+    if(s.max===1)tpPush(['c']);else if(s.max===2)tpPush(['r']);
+  }else if(s.mode==='scroll'&&s.hist.length&&e.timeStamp-s.hist[s.hist.length-1][0]<60){
+    const h=s.hist,span=Math.max(16,h[h.length-1][0]-h[0][0]+16);   // momentum from the last ~100 ms
+    tpInertia(h.reduce((a,x)=>a+x[1],0)/span,h.reduce((a,x)=>a+x[2],0)/span);
+  }
+}
+pad.addEventListener('pointerup',tpUp);
+pad.addEventListener('pointercancel',tpUp);
+pad.addEventListener('contextmenu',e=>e.preventDefault());
+$('tp-go').addEventListener('click',tpUnlock);
+const tpL=$('tp-l');
+tpL.addEventListener('pointerdown',e=>{
+  e.preventDefault();if(!tp.on||tp.btn)return;
+  tpWake();tp.btn=true;tpL.classList.add('on');tpPush(['d']);   // hold + move on the pad = drag
+});
+['pointerup','pointercancel','pointerleave'].forEach(ev=>tpL.addEventListener(ev,()=>{
+  if(!tp.btn)return;
+  tp.btn=false;tpL.classList.remove('on');tpPush(['u']);
+}));
+$('tp-r').addEventListener('pointerdown',e=>{e.preventDefault();if(tp.on){tpWake();tpPush(['r'])}});
+document.addEventListener('visibilitychange',()=>{if(document.hidden)tpLock()});
+window.addEventListener('pagehide',tpLock);
 $('tf').addEventListener('submit',e=>{
   e.preventDefault();const i=$('ti');
   if(i.value){send('text',i.value);i.value=''}

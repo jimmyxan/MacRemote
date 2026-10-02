@@ -7,6 +7,7 @@ final class Commands {
 
     init() { brightness.resetGamma() }
     private let queue = DispatchQueue(label: "macremote.commands")
+    private lazy var pointer = Pointer(queue: queue)
 
     func run(_ action: String, _ value: String?) -> [String: Any] {
         queue.sync {
@@ -31,6 +32,10 @@ final class Commands {
             case "bright_up", "bright_down", "ext_bright_up", "ext_bright_down":
                 return ["ok": true, "info": brightness.adjust(up: action.hasSuffix("_up"),
                                                               target: action.hasPrefix("ext_") ? "ext" : "mac")]
+            case "pointer":
+                guard let data = value?.data(using: .utf8),
+                      let ops = (try? JSONSerialization.jsonObject(with: data)) as? [[Any]] else { return ["ok": false] }
+                return pointer.apply(ops)
             case "display_sleep":
                 Input.displaySleep()
             case "lock":
