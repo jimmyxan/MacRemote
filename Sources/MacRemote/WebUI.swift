@@ -226,13 +226,13 @@ const L={
   err:'Error ',unreachable:'Mac unreachable',failed:'Command failed',pvUnavailable:'Preview unavailable',media:'Media content',
   hint:(i,n)=>'Tap the image to switch display ('+i+'/'+n+')',
   tpStart:'Activate trackpad',tpResume:'Resume',click:'Click',rclick:'Right click',
-  tpH1:'1 finger: move · tap: click · hold: drag',tpH2:'2 fingers: scroll · tap: right click',tpH3:'3 fingers: swipe for Spaces and Mission Control'},
+  tpH1:'1 finger: move · tap: click · hold: drag',tpH2:'2 fingers: scroll · pinch: zoom · tap: right click',tpH3:'3 fingers: swipe for Spaces and Mission Control'},
  it:{bright:'Luminosità',nav:'Navigazione',text:'Testo',screen:'Schermo',close:'Chiudi',preview:'Anteprima schermo',space:'Spazio',send:'Invia',off:'Spegni',lock:'Blocca',app:'App in uso',
   ph:'Scrivi sul Mac…',confirmApp:"Chiudere l'app in primo piano sul Mac?",confirmSelf:'Chiudere MacRemote? Per riaprirlo servirà il Mac.',
   err:'Errore ',unreachable:'Mac non raggiungibile',failed:'Comando fallito',pvUnavailable:'Anteprima non disponibile',media:'Contenuto multimediale',
   hint:(i,n)=>"Tocca l'immagine per cambiare schermo ("+i+'/'+n+')',
   tpStart:'Attiva trackpad',tpResume:'Riprendi',click:'Clic',rclick:'Clic destro',
-  tpH1:'1 dito: muovi · tocca: clic · tieni: trascina',tpH2:'2 dita: scorri · tocca: clic destro',tpH3:'3 dita: swipe per Spazi e Mission Control'}};
+  tpH1:'1 dito: muovi · tocca: clic · tieni: trascina',tpH2:'2 dita: scorri · pizzica: zoom · tocca: clic destro',tpH3:'3 dita: swipe per Spazi e Mission Control'}};
 /* Messages coming from the Mac are English; these pairs translate them (substring replace). */
 const SRV=[['Accessibility permission missing: System Settings › Privacy › Accessibility','Permesso Accessibilità mancante: Impostazioni › Privacy › Accessibilità'],
  ['Screen Recording permission missing: System Settings › Privacy › Screen Recording','Permesso Registrazione schermo mancante: Impostazioni › Privacy › Registrazione schermo'],
@@ -374,7 +374,7 @@ window.addEventListener('pagehide',()=>{if(pv.on)pvSet(false)});
 
 /* Trackpad: locked until the pill is tapped, relocks after 20 s without touches.
    Gestures become small ops (see Pointer.swift), coalesced and sent one request at a time. */
-const TP={idle:20000,hold:400,tap:300,dead:3,scrollDead:8,swipe:40,sens:1.25,scroll:1.5,friction:.9965};
+const TP={idle:20000,hold:400,tap:300,dead:3,scrollDead:8,pinchDead:10,pinchStep:26,swipe:40,sens:1.25,scroll:1.5,friction:.9965};
 const tp={on:false,q:[],busy:false,last:0,idle:null,raf:0,pts:new Map(),s:null,btn:false};
 const pad=$('tp');
 /* Pointer acceleration: slow strokes stay precise, fast flicks cross the screen. v in px/ms. */
@@ -424,6 +424,7 @@ function tpInertia(vx,vy){
   tp.raf=requestAnimationFrame(step);
 }
 function tpStopInertia(){cancelAnimationFrame(tp.raf);tp.raf=0}
+function tpDist(){const [a,b]=[...tp.pts.values()];return Math.hypot(a.x-b.x,a.y-b.y)}
 function tpDot(p){
   const r=pad.getBoundingClientRect();
   p.dot.style.transform='translate('+(p.x-r.left)+'px,'+(p.y-r.top)+'px)';
@@ -433,11 +434,12 @@ pad.addEventListener('pointerdown',e=>{
   e.preventDefault();
   try{pad.setPointerCapture(e.pointerId)}catch(x){}
   tpWake();tpStopInertia();tp.q=tp.q.filter(o=>o[0]!=='s');   // a new touch stops any momentum
-  if(!tp.pts.size)tp.s={t0:e.timeStamp,max:0,mode:'move',lead:e.pointerId,travel:0,moved:false,held:false,swiped:false,bx:0,by:0,gx:0,gy:0,hist:[],hold:0};
+  if(!tp.pts.size)tp.s={t0:e.timeStamp,max:0,mode:'move',lead:e.pointerId,travel:0,moved:false,held:false,swiped:false,bx:0,by:0,gx:0,gy:0,cx:0,cy:0,d0:0,zr:0,hist:[],hold:0};
   const s=tp.s,p={x:e.clientX,y:e.clientY,t:e.timeStamp,dot:document.createElement('i')};
   p.dot.className='dot';pad.appendChild(p.dot);tpDot(p);
   tp.pts.set(e.pointerId,p);
   s.max=Math.max(s.max,tp.pts.size);
+  if(tp.pts.size===2)s.d0=tpDist();
   clearTimeout(s.hold);
   if(s.held)return;   // while dragging, extra fingers are ignored
   s.mode=s.max>=3?'swipe':s.max===2?'scroll':'move';
@@ -466,11 +468,24 @@ pad.addEventListener('pointermove',e=>{
     tpPush(['m',dx*g,dy*g]);
   }else if(s.mode==='scroll'){
     if(n<2)return;
-    if(!s.moved){if(s.travel<TP.scrollDead)return;s.moved=true}
+    if(!s.moved){
+      // Two fingers are either a scroll (both move together) or a pinch (the distance changes while
+      // the midpoint stays put). The midpoint's drift is a vector sum, so opposite moves cancel out.
+      s.cx+=dx/n;s.cy+=dy/n;
+      const dd=Math.abs(tpDist()-s.d0),cm=Math.hypot(s.cx,s.cy);
+      if(dd>=TP.pinchDead&&dd>cm*1.5){s.moved=true;s.mode='pinch';s.zr=tpDist();return}
+      if(cm<TP.scrollDead)return;
+      s.moved=true;
+    }
     const sx=dx/n*TP.scroll,sy=dy/n*TP.scroll;   // each finger moves the centroid by 1/n
     s.hist.push([e.timeStamp,sx,sy]);
     while(e.timeStamp-s.hist[0][0]>100)s.hist.shift();
     tpPush(['s',sx,sy]);
+  }else if(s.mode==='pinch'){
+    if(n<2)return;
+    const d=tpDist();   // one step per pinchStep px of finger distance, as many as the move covers
+    while(d-s.zr>=TP.pinchStep){s.zr+=TP.pinchStep;tpPush(['z','i'])}
+    while(s.zr-d>=TP.pinchStep){s.zr-=TP.pinchStep;tpPush(['z','o'])}
   }else if(!s.swiped){
     s.gx+=dx/n;s.gy+=dy/n;
     if(Math.hypot(s.gx,s.gy)>TP.swipe){

@@ -3,7 +3,7 @@ import CoreGraphics
 
 /// Trackpad on the phone. The page batches its gestures into small ops, applied here in order:
 /// ["m",dx,dy] move · ["s",dx,dy] scroll · ["c"] click · ["r"] right click
-/// ["d"] / ["u"] left button down / up (drag) · ["g",dir] three-finger swipe (l, r, u, d)
+/// ["d"] / ["u"] left button down / up (drag) · ["g",dir] three-finger swipe (l, r, u, d) · ["z",dir] pinch step (i = in, o = out)
 final class Pointer {
     private let queue: DispatchQueue
     private var held = false
@@ -31,6 +31,7 @@ final class Pointer {
                 held = false
                 post(.leftMouseUp, .left, location(), lastClick?.count ?? 1)
             case "g": swipe(op.count > 1 ? op[1] as? String : nil)
+            case "z": zoom(in: (op.count > 1 ? op[1] as? String : nil) == "i")
             default: break
             }
         }
@@ -113,6 +114,11 @@ final class Pointer {
         let keys: [String: CGKeyCode] = ["l": 124, "r": 123, "u": 126, "d": 125]
         guard let dir, let key = keys[dir] else { return }
         Input.postKey(key, flags: [.maskControl, .maskSecondaryFn])
+    }
+
+    /// There is no public API for a pinch gesture, so a pinch step is ⌘+ / ⌘−, the zoom shortcut of browsers, Preview, Pages, Maps…
+    private func zoom(in zoomIn: Bool) {
+        Input.postKey(zoomIn ? 24 : 27, flags: .maskCommand)   // ANSI = and -
     }
 
     /// A lost "up" (phone locked, Wi-Fi dropped) must not leave the button stuck down.
