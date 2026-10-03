@@ -1,42 +1,74 @@
 import AppKit
 import CoreGraphics
 
-/// Trackpad on the phone. The page batches its gestures into small ops, applied here in order:
+/// Touchpad on the phone. The page batches its gestures into small ops, applied here in order:
 /// ["m",dx,dy] move · ["s",dx,dy] scroll · ["c"] click · ["r"] right click
 /// ["d"] / ["u"] left button down / up (drag) · ["g",dir] three-finger swipe (l, r, u, d) · ["z",dir] pinch step (i = in, o = out)
 final class Pointer {
     private let queue: DispatchQueue
     private var held = false
     private var lastClick: (at: Date, button: CGMouseButton, pos: CGPoint, count: Int)?
-    private var moveRest = CGPoint.zero     // sub-pixel remainders carried between batches
-    private var scrollRest = CGPoint.zero
+    private var scrollRest = CGPoint.zero   // sub-pixel scroll carried between events
     private var release: DispatchWorkItem?
+
+    // Batches arrive in bursts over Wi-Fi. Applied as they come, the cursor jumps; instead motion is buffered
+    // and played back at 120 Hz, spread over the time the next batch is expected to take.
+    private static let tick = 1.0 / 120
+    private var pendingMove = CGPoint.zero
+    private var pendingScroll = CGPoint.zero
+    private var interval = 0.016          // running estimate of the time between batches
+    private var lastBatch = Date.distantPast
+    private var ticker: DispatchSourceTimer?
+
+    // Where we last put the cursor. Reading it back right after posting can still return the old position,
+    // which lost steps or pulled the cursor back; while we are moving it, our own value is the truth.
+    private var cursor = CGPoint.zero
+    private var cursorAt = Date.distantPast
 
     init(queue: DispatchQueue) { self.queue = queue }
 
     func apply(_ ops: [[Any]]) -> [String: Any] {
+        let now = Date()
+        if ops.contains(where: { let k = $0.first as? String; return k == "m" || k == "s" }) {
+            let gap = now.timeIntervalSince(lastBatch)
+            if gap < 0.25 { interval = min(max(interval * 0.7 + gap * 0.3, 0.008), 0.06) }
+            lastBatch = now
+        }
         for op in ops.prefix(512) {
             guard let kind = op.first as? String else { continue }
             let x = Self.number(op, 1), y = Self.number(op, 2)
             switch kind {
-            case "m": move(x, y)
-            case "s": scroll(x, y)
-            case "c" where !held: click(.left)
-            case "r" where !held: click(.right)
-            case "d" where !held:
-                held = true
-                let p = location()
-                post(.leftMouseDown, .left, p, nextCount(.left, at: p))
-            case "u" where held:
-                held = false
-                post(.leftMouseUp, .left, location(), lastClick?.count ?? 1)
-            case "g": swipe(op.count > 1 ? op[1] as? String : nil)
-            case "z": Input.zoom(in: (op.count > 1 ? op[1] as? String : nil) == "i")
-            default: break
+            case "m":
+                pendingMove.x += x; pendingMove.y += y
+                startTicker()
+            case "s":
+                pendingScroll.x += x; pendingScroll.y += y
+                startTicker()
+            default:
+                drain(1)   // clicks and keys act where the cursor is meant to be: play the buffered motion out first
+                act(kind, op)
             }
         }
         armRelease()
         return ["ok": true]
+    }
+
+    private func act(_ kind: String, _ op: [Any]) {
+        let arg = op.count > 1 ? op[1] as? String : nil
+        switch kind {
+        case "c" where !held: click(.left)
+        case "r" where !held: click(.right)
+        case "d" where !held:
+            held = true
+            let p = position()
+            post(.leftMouseDown, .left, p, nextCount(.left, at: p))
+        case "u" where held:
+            held = false
+            post(.leftMouseUp, .left, position(), lastClick?.count ?? 1)
+        case "g": swipe(arg)
+        case "z": Input.zoom(in: arg == "i")
+        default: break
+        }
     }
 
     private static func number(_ op: [Any], _ i: Int) -> CGFloat {
@@ -44,20 +76,57 @@ final class Pointer {
         return CGFloat(min(max(v, -5000), 5000))
     }
 
-    private func location() -> CGPoint { CGEvent(source: nil)?.location ?? .zero }
+    // MARK: Smoothing
+
+    private func startTicker() {
+        guard ticker == nil else { return }
+        let t = DispatchSource.makeTimerSource(queue: queue)
+        t.schedule(deadline: .now(), repeating: Self.tick, leeway: .milliseconds(1))
+        t.setEventHandler { [weak self] in self?.step() }
+        ticker = t
+        t.resume()
+    }
+
+    private func step() {
+        drain(CGFloat(min(1, max(0.2, Self.tick / interval))))
+        if pendingMove == .zero && pendingScroll == .zero {
+            ticker?.cancel()
+            ticker = nil
+        }
+    }
+
+    /// Plays out `fraction` of the buffered motion; small leftovers go out whole so the buffer empties.
+    private func drain(_ fraction: CGFloat) {
+        let m = Self.take(&pendingMove, fraction)
+        if m != .zero { move(m.x, m.y) }
+        let s = Self.take(&pendingScroll, fraction)
+        if s != .zero { scroll(s.x, s.y) }
+    }
+
+    private static func take(_ p: inout CGPoint, _ fraction: CGFloat) -> CGPoint {
+        let part = fraction >= 1 || hypot(p.x, p.y) < 1 ? p : CGPoint(x: p.x * fraction, y: p.y * fraction)
+        p.x -= part.x; p.y -= part.y
+        return part
+    }
+
+    // MARK: Events
+
+    private func position() -> CGPoint {
+        if Date().timeIntervalSince(cursorAt) < 0.5 { return cursor }
+        return CGEvent(source: nil)?.location ?? .zero
+    }
 
     private func move(_ dx: CGFloat, _ dy: CGFloat) {
-        moveRest.x += dx; moveRest.y += dy
-        let sx = moveRest.x.rounded(.towardZero), sy = moveRest.y.rounded(.towardZero)
-        guard sx != 0 || sy != 0 else { return }
-        moveRest.x -= sx; moveRest.y -= sy
-        let from = location()
-        let to = clamp(CGPoint(x: from.x + sx, y: from.y + sy), from: from)
+        let from = position()
+        let to = clamp(CGPoint(x: from.x + dx, y: from.y + dy), from: from)
         let e = CGEvent(mouseEventSource: nil, mouseType: held ? .leftMouseDragged : .mouseMoved,
                         mouseCursorPosition: to, mouseButton: .left)
-        e?.setIntegerValueField(.mouseEventDeltaX, value: Int64(to.x - from.x))
-        e?.setIntegerValueField(.mouseEventDeltaY, value: Int64(to.y - from.y))
+        e?.flags = []
+        e?.setIntegerValueField(.mouseEventDeltaX, value: Int64((to.x - from.x).rounded()))
+        e?.setIntegerValueField(.mouseEventDeltaY, value: Int64((to.y - from.y).rounded()))
         e?.post(tap: .cghidEventTap)
+        cursor = to
+        cursorAt = Date()
     }
 
     /// Free movement across displays; at the outer edges the cursor stops on the display it was on.
@@ -81,12 +150,13 @@ final class Pointer {
         scrollRest.x -= ix; scrollRest.y -= iy
         let e = CGEvent(scrollWheelEvent2Source: nil, units: .pixel, wheelCount: 2,
                         wheel1: Int32(iy), wheel2: Int32(ix), wheel3: 0)
+        e?.flags = []
         e?.setIntegerValueField(.scrollWheelEventIsContinuous, value: 1)
         e?.post(tap: .cghidEventTap)
     }
 
     private func click(_ button: CGMouseButton) {
-        let p = location(), n = nextCount(button, at: p)
+        let p = position(), n = nextCount(button, at: p)
         let types: [CGEventType] = button == .right ? [.rightMouseDown, .rightMouseUp] : [.leftMouseDown, .leftMouseUp]
         for t in types { post(t, button, p, n) }
     }
@@ -105,6 +175,8 @@ final class Pointer {
 
     private func post(_ type: CGEventType, _ button: CGMouseButton, _ p: CGPoint, _ count: Int) {
         let e = CGEvent(mouseEventSource: nil, mouseType: type, mouseCursorPosition: p, mouseButton: button)
+        // Explicitly no modifiers: after a ⌘+ zoom step a click must not land as a ⌘-click.
+        e?.flags = []
         e?.setIntegerValueField(.mouseEventClickState, value: Int64(count))
         e?.post(tap: .cghidEventTap)
     }
@@ -124,7 +196,7 @@ final class Pointer {
         let w = DispatchWorkItem { [weak self] in
             guard let self, self.held else { return }
             self.held = false
-            self.post(.leftMouseUp, .left, self.location(), 1)
+            self.post(.leftMouseUp, .left, self.position(), 1)
         }
         release = w
         queue.asyncAfter(deadline: .now() + 8, execute: w)

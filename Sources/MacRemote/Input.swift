@@ -31,6 +31,13 @@ enum Input {
             ev?.flags = flags
             ev?.post(tap: .cghidEventTap)
         }
+        // The flags ride on the key itself, with no ⌘/⌃ key press or release around it, so macOS can go on
+        // treating the modifier as held and turn later clicks into ⌘-clicks. Release it explicitly.
+        if !flags.isEmpty, let up = CGEvent(keyboardEventSource: nil, virtualKey: 55, keyDown: false) {
+            up.type = .flagsChanged
+            up.flags = []
+            up.post(tap: .cghidEventTap)
+        }
     }
 
     /// Virtual key codes are key positions, not characters: on an Italian layout code 24 types "ì", not "=".

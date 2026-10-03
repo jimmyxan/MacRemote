@@ -34,9 +34,10 @@ final class Server {
         receive(conn, buffer: Data())
     }
 
-    private func receive(_ conn: NWConnection, buffer: Data) {
+    private func receive(_ conn: NWConnection, buffer: Data, idle: DispatchWorkItem? = nil) {
         conn.receive(minimumIncompleteLength: 1, maximumLength: 65536) { [weak self] data, _, done, err in
             guard let self else { return }
+            idle?.cancel()
             var buf = buffer
             if let data { buf.append(data) }
             if let req = HTTPRequest.parse(buf) {
@@ -51,8 +52,9 @@ final class Server {
 
     private func respond(_ conn: NWConnection, to req: HTTPRequest) {
         // The trackpad streams small batches back to back, so it gets its own, larger budget.
-        let admitted = req.path == "/pointer" ? Self.admit(&recentPointer, limit: 150) : Self.admit(&recent, limit: 40)
-        if !admitted { return send(conn, 429, "text/plain", "slow down") }
+        let pointer = req.path == "/pointer"
+        let admitted = pointer ? Self.admit(&recentPointer, limit: 150) : Self.admit(&recent, limit: 40)
+        if !admitted { return send(conn, 429, "text/plain", "slow down", keepAlive: pointer) }
 
         if req.method == "GET", req.path == "/icon.png" {
             guard let url = Bundle.main.url(forResource: "touch-icon", withExtension: "png"),
@@ -80,7 +82,7 @@ final class Server {
         case ("POST", "/pointer"):
             let result = handler("pointer", String(decoding: req.body, as: UTF8.self))
             let json = (try? JSONSerialization.data(withJSONObject: result)) ?? Data("{}".utf8)
-            send(conn, 200, "application/json", json)
+            send(conn, 200, "application/json", json, keepAlive: true)
         case ("GET", _):
             DispatchQueue.global().async { [self] in
                 if let (status, type, body) = resource(req) { send(conn, status, type, body) }
@@ -99,13 +101,20 @@ final class Server {
         return true
     }
 
-    private func send(_ conn: NWConnection, _ status: Int, _ type: String, _ body: String) {
-        send(conn, status, type, Data(body.utf8))
+    private func send(_ conn: NWConnection, _ status: Int, _ type: String, _ body: String, keepAlive: Bool = false) {
+        send(conn, status, type, Data(body.utf8), keepAlive: keepAlive)
     }
 
-    private func send(_ conn: NWConnection, _ status: Int, _ type: String, _ payload: Data) {
-        let head = "HTTP/1.1 \(status) X\r\nContent-Type: \(type)\r\nContent-Length: \(payload.count)\r\nCache-Control: no-store\r\nConnection: close\r\n\r\n"
-        conn.send(content: Data(head.utf8) + payload, completion: .contentProcessed { _ in conn.cancel() })
+    /// The touchpad posts every few milliseconds: keeping its connection open skips a TCP handshake per batch,
+    /// which made motion arrive in uneven bursts. Everything else still closes after one response.
+    private func send(_ conn: NWConnection, _ status: Int, _ type: String, _ payload: Data, keepAlive: Bool = false) {
+        let head = "HTTP/1.1 \(status) X\r\nContent-Type: \(type)\r\nContent-Length: \(payload.count)\r\nCache-Control: no-store\r\nConnection: \(keepAlive ? "keep-alive" : "close")\r\n\r\n"
+        conn.send(content: Data(head.utf8) + payload, completion: .contentProcessed { [weak self] _ in
+            guard keepAlive, let self else { return conn.cancel() }
+            let idle = DispatchWorkItem { conn.cancel() }   // a phone that went away must not hold the socket forever
+            self.queue.asyncAfter(deadline: .now() + 15, execute: idle)
+            self.receive(conn, buffer: Data(), idle: idle)
+        })
     }
 
     static func isLocal(_ endpoint: NWEndpoint) -> Bool {

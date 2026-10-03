@@ -396,7 +396,7 @@ window.addEventListener('pagehide',()=>{if(pv.on)pvSet(false)});
 
 /* Trackpad: locked until the pill is tapped, relocks after 20 s without touches.
    Gestures become small ops (see Pointer.swift), coalesced and sent one request at a time. */
-const TP={idle:20000,hold:400,tap:300,dead:3,scrollDead:8,pinchDead:8,pinchStep:26,swipe:40,sens:1.25,scroll:1.5,friction:.9965};
+const TP={idle:20000,hold:400,tap:300,tapSlop:10,dead:3,scrollDead:8,pinchDead:8,pinchStep:26,swipe:40,sens:1.25,scroll:1.5,friction:.9965};
 const tp={on:false,q:[],busy:false,last:0,idle:null,raf:0,pts:new Map(),s:null,btn:false};
 const pad=$('tp');
 /* Pointer acceleration: slow strokes stay precise, fast flicks cross the screen. v in px/ms. */
@@ -446,6 +446,7 @@ function tpInertia(vx,vy){
   tp.raf=requestAnimationFrame(step);
 }
 function tpStopInertia(){cancelAnimationFrame(tp.raf);tp.raf=0}
+function tpMove(s,x,y){s.sx+=x;s.sy+=y;tpPush(['m',x,y])}
 function tpDist(){const [a,b]=[...tp.pts.values()];return Math.hypot(a.x-b.x,a.y-b.y)}
 function tpDot(p){
   const r=pad.getBoundingClientRect();
@@ -456,13 +457,14 @@ pad.addEventListener('pointerdown',e=>{
   e.preventDefault();
   try{pad.setPointerCapture(e.pointerId)}catch(x){}
   tpWake();tpStopInertia();tp.q=tp.q.filter(o=>o[0]!=='s');   // a new touch stops any momentum
-  if(!tp.pts.size)tp.s={t0:e.timeStamp,max:0,mode:'move',lead:e.pointerId,travel:0,moved:false,held:false,swiped:false,bx:0,by:0,gx:0,gy:0,cx:0,cy:0,d0:0,zr:0,hist:[],hold:0};
+  if(!tp.pts.size)tp.s={t0:e.timeStamp,max:0,mode:'move',lead:e.pointerId,travel:0,moved:false,held:false,swiped:false,bx:0,by:0,gx:0,gy:0,cx:0,cy:0,d0:0,zr:0,hist:[],hold:0,sx:0,sy:0,v:0,acted:false};
   const s=tp.s,p={x:e.clientX,y:e.clientY,t:e.timeStamp,dot:document.createElement('i')};
   p.dot.className='dot';pad.appendChild(p.dot);tpDot(p);
   tp.pts.set(e.pointerId,p);
   s.max=Math.max(s.max,tp.pts.size);
   if(tp.pts.size>=2){   // a finger that landed first may have jittered: judge the gesture afresh
     s.d0=tpDist();s.moved=s.swiped=false;s.travel=s.cx=s.cy=s.gx=s.gy=0;
+    if(e.timeStamp-s.t0<150&&(s.sx||s.sy)){tpPush(['m',-s.sx,-s.sy]);s.sx=s.sy=0}   // and the cursor goes back where it was
   }
   clearTimeout(s.hold);
   if(s.held)return;   // while dragging, extra fingers are ignored
@@ -486,10 +488,13 @@ pad.addEventListener('pointermove',e=>{
       s.bx+=dx;s.by+=dy;
       if(s.travel<TP.dead)return;
       s.moved=true;clearTimeout(s.hold);
-      return tpPush(['m',s.bx*TP.sens,s.by*TP.sens]);
+      return tpMove(s,s.bx*TP.sens,s.by*TP.sens);
     }
-    const g=tpGain(Math.hypot(dx,dy)/dt);
-    tpPush(['m',dx*g,dy*g]);
+    // Speed from one event is noisy (iOS timestamps jitter), and a noisy gain makes the cursor surge
+    // and stall; a short moving average keeps the acceleration steady.
+    const v=Math.hypot(dx,dy)/dt;s.v=s.v?s.v*.6+v*.4:v;
+    const g=tpGain(s.v);
+    tpMove(s,dx*g,dy*g);
   }else if(s.mode==='scroll'){
     if(n<2)return;
     if(!s.moved){
@@ -505,16 +510,16 @@ pad.addEventListener('pointermove',e=>{
     const sx=dx/n*TP.scroll,sy=dy/n*TP.scroll;   // each finger moves the centroid by 1/n
     s.hist.push([e.timeStamp,sx,sy]);
     while(e.timeStamp-s.hist[0][0]>100)s.hist.shift();
-    tpPush(['s',sx,sy]);
+    s.acted=true;tpPush(['s',sx,sy]);
   }else if(s.mode==='pinch'){
     if(n<2)return;
     const d=tpDist();   // one step per pinchStep px of finger distance, as many as the move covers
-    while(d-s.zr>=TP.pinchStep){s.zr+=TP.pinchStep;tpPush(['z','i'])}
-    while(s.zr-d>=TP.pinchStep){s.zr-=TP.pinchStep;tpPush(['z','o'])}
+    while(d-s.zr>=TP.pinchStep){s.zr+=TP.pinchStep;s.acted=true;tpPush(['z','i'])}
+    while(s.zr-d>=TP.pinchStep){s.zr-=TP.pinchStep;s.acted=true;tpPush(['z','o'])}
   }else if(!s.swiped){
     s.gx+=dx/n;s.gy+=dy/n;
     if(Math.hypot(s.gx,s.gy)>TP.swipe){
-      s.swiped=s.moved=true;
+      s.swiped=s.moved=s.acted=true;
       tpPush(['g',Math.abs(s.gx)>Math.abs(s.gy)?(s.gx<0?'l':'r'):(s.gy<0?'u':'d')]);
     }
   }
@@ -527,8 +532,11 @@ function tpUp(e){
   clearTimeout(s.hold);tp.s=null;
   if(s.held){pad.classList.remove('drag');return tpPush(['u'])}
   if(e.type==='pointercancel')return;
-  if(!s.moved&&e.timeStamp-s.t0<TP.tap){
-    if(s.max===1)tpPush(['c']);else if(s.max===2)tpPush(['r']);
+  /* A tap is short and nearly still. Fingers on glass drift a few px, so up to tapSlop px per finger still
+     counts; whatever the cursor moved meanwhile is sent back first, so the click lands where it was aimed. */
+  if(e.timeStamp-s.t0<TP.tap&&!s.acted&&s.travel<TP.tapSlop*s.max){
+    if(s.max===1){if(s.sx||s.sy)tpPush(['m',-s.sx,-s.sy]);tpPush(['c'])}
+    else if(s.max===2)tpPush(['r']);
   }else if(s.mode==='scroll'&&s.hist.length&&e.timeStamp-s.hist[s.hist.length-1][0]<60){
     const h=s.hist,span=Math.max(16,h[h.length-1][0]-h[0][0]+16);   // momentum from the last ~100 ms
     tpInertia(h.reduce((a,x)=>a+x[1],0)/span,h.reduce((a,x)=>a+x[2],0)/span);
