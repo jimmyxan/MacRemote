@@ -1,4 +1,5 @@
 import AppKit
+import Carbon.HIToolbox
 import CoreGraphics
 
 enum Input {
@@ -30,6 +31,38 @@ enum Input {
             ev?.flags = flags
             ev?.post(tap: .cghidEventTap)
         }
+    }
+
+    /// Virtual key codes are key positions, not characters: on an Italian layout code 24 types "ì", not "=".
+    /// Ask the current layout which key types `char`, so shortcuts like ⌘+ and ⌘− hit the right key.
+    static func keyCode(typing char: String, shift: Bool = false) -> CGKeyCode? {
+        guard let source = TISCopyCurrentKeyboardLayoutInputSource()?.takeRetainedValue(),
+              let raw = TISGetInputSourceProperty(source, kTISPropertyUnicodeKeyLayoutData) else { return nil }
+        let data = Unmanaged<CFData>.fromOpaque(raw).takeUnretainedValue()
+        guard let bytes = CFDataGetBytePtr(data) else { return nil }
+        let layout = UnsafeRawPointer(bytes).assumingMemoryBound(to: UCKeyboardLayout.self)
+        let capacity = 4
+        for code in 0..<128 {
+            var dead: UInt32 = 0
+            var length = 0
+            var buffer = [UniChar](repeating: 0, count: capacity)
+            let status = UCKeyTranslate(layout, UInt16(code), UInt16(kUCKeyActionDown), shift ? 2 : 0,
+                                        UInt32(LMGetKbdType()), 1, &dead, capacity, &length, &buffer)
+            if status == noErr, length == 1, String(utf16CodeUnits: buffer, count: 1) == char { return CGKeyCode(code) }
+        }
+        return nil
+    }
+
+    /// There is no public API for a pinch, so a zoom step is ⌘+ / ⌘−, the shortcut of browsers, Preview, Pages, Maps…
+    /// Typed on whatever layout is active ("+" is unshifted on Italian, "=" on US, where ⌘= also zooms in).
+    static func zoom(in zoomIn: Bool) {
+        let tries: [(String, Bool)] = zoomIn ? [("+", false), ("=", false), ("+", true)] : [("-", false)]
+        for (char, shift) in tries {
+            if let code = keyCode(typing: char, shift: shift) {
+                return postKey(code, flags: shift ? [.maskCommand, .maskShift] : .maskCommand)
+            }
+        }
+        postKey(zoomIn ? 24 : 27, flags: .maskCommand)   // layout lookup failed: ANSI positions
     }
 
     static func type(_ text: String) {

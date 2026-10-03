@@ -41,7 +41,7 @@ Sul Mac gira una piccola app nella barra dei menu. Sull'iPhone non installi null
 - **Luminosità**, con controlli separati per lo schermo del Mac e per il monitor esterno.
 - **Navigazione**: frecce, OK (Invio), Esc, Tab, Maiusc+Tab, Spazio. Serve per muoversi tra gli elementi cliccabili senza mouse.
 - **Testo**: scrivi dall'iPhone nel campo attivo sul Mac.
-- **Trackpad**: un riquadro che fa da trackpad del Mac. 1 dito muove il puntatore (con accelerazione: lento è preciso, veloce attraversa lo schermo), tocco = clic, doppio tocco = doppio clic, tieni premuto e muovi = trascina. 2 dita scorrono (con inerzia), avvicinarle o allontanarle fa zoom e il tocco a 2 dita è il clic destro. 3 dita: swipe a sinistra/destra cambia Spazio, in su apre Mission Control, in giù le finestre dell'app. Sotto ci sono i pulsanti **Clic** (tenendolo premuto e muovendo sul riquadro si trascina) e **Clic destro**. Per evitare tocchi involontari il riquadro è bloccato finché non tocchi **Attiva trackpad**, e si riblocca dopo 20 secondi senza tocchi (pulsante **Riprendi**).
+- **Touchpad**: un riquadro che fa da touchpad del Mac. 1 dito muove il puntatore (con accelerazione: lento è preciso, veloce attraversa lo schermo), tocco = clic, doppio tocco = doppio clic, tieni premuto e muovi = trascina. 2 dita scorrono (con inerzia), avvicinarle o allontanarle fa zoom e il tocco a 2 dita è il clic destro. 3 dita: swipe a sinistra/destra cambia Spazio, in su apre Mission Control, in giù le finestre dell'app. Sotto ci sono i pulsanti **Clic** (tenendolo premuto e muovendo sul riquadro si trascina) e **Clic destro**. Il pulsante in alto a sinistra della sezione ingrandisce il touchpad (circa il 70% dello schermo); si riduce con lo stesso pulsante o toccando fuori dal riquadro. Per evitare tocchi involontari il riquadro è bloccato finché non tocchi **Attiva touchpad**, e si riblocca dopo 20 secondi senza tocchi (pulsante **Riprendi**).
 - **Schermo**: spegni il display (il Mac resta acceso) oppure blocca il Mac.
 - **Lingua**: la pagina è in inglese di default e c'è l'italiano. Si sceglie la lingua in automatico dalla lingua del telefono; il selettore EN/IT in alto permette di cambiarla e la scelta viene ricordata. Il menu e la finestra del QR sul Mac restano in italiano.
 - **Chiudi**: chiude l'app in primo piano (come ⌘Q: se c'è lavoro non salvato, l'app chiede prima) oppure chiude MacRemote stesso, per lasciare il Mac pulito prima della sospensione. Chiede conferma. Il Finder non si chiude. Dopo aver chiuso MacRemote serve il Mac per riaprirlo.
@@ -72,7 +72,7 @@ La pagina che si apre sull'iPhone. A sinistra la parte alta: volume, luminosità
 | Media | Traccia precedente, play/pausa (viola), traccia successiva |
 | Navigazione | Frecce, OK (Invio), Esc, Tab, Maiusc+Tab, Spazio |
 | Testo | Scrive sul Mac, con cancella e invio |
-| Trackpad | Puntatore, clic, trascina, scorrimento, gesti a 3 dita; si blocca dopo 20 s |
+| Touchpad | Puntatore, clic, trascina, scorrimento, gesti a 3 dita; si blocca dopo 20 s |
 | Schermo | Spegni il display o blocca il Mac |
 | Chiudi | Chiude l'app in primo piano o MacRemote, con conferma |
 | In riproduzione | Mostra titolo, artista, copertina e avanzamento (solo lettura) |
@@ -95,8 +95,8 @@ In cima alla pagina compare la scheda **In riproduzione**, solo quando il Mac st
 
 - **Non funziona fuori casa**: solo Mac e iPhone sulla stessa rete Wi-Fi/LAN. Non c'è nessun server in cloud.
 - **Non è cifrato**: usa HTTP semplice, protetto da un token casuale nel link. Va bene su una rete di casa di cui ti fidi, non su Wi-Fi pubblici.
-- **Non è un desktop remoto**: lo schermo del Mac si vede solo come anteprima statica a bassa frequenza. Il trackpad si usa guardando lo schermo del Mac.
-- **Lo zoom a pizzico è a scatti**: macOS non permette di inviare un vero pinch, quindi MacRemote preme ⌘+ e ⌘−. Funziona nelle app che hanno quelle scorciatoie (browser, Anteprima, Pagine, Mappe…), non è fluido e non segue il punto sotto le dita. Gli swipe a 3 dita usano le scorciatoie predefinite di macOS (Ctrl+frecce): se le hai disattivate in Impostazioni → Tastiera → Abbreviazioni → Mission Control, non funzionano.
+- **Non è un desktop remoto**: lo schermo del Mac si vede solo come anteprima statica a bassa frequenza. Il touchpad si usa guardando lo schermo del Mac.
+- **Lo zoom a pizzico è a scatti**: macOS non permette di inviare un vero pinch, quindi MacRemote preme ⌘+ e ⌘− (sul tasto giusto per il layout di tastiera in uso). Funziona nelle app che hanno quelle scorciatoie (browser, Anteprima, Pagine, Mappe…), non è fluido e non segue il punto sotto le dita. Gli swipe a 3 dita usano le scorciatoie predefinite di macOS (Ctrl+frecce): se le hai disattivate in Impostazioni → Tastiera → Abbreviazioni → Mission Control, non funzionano.
 - **"In riproduzione" è solo in lettura**: mostra cosa suona, ma non si può spostare la barra. Play/pausa, avanti e indietro usano i tasti multimediali.
 - **Non è testato ovunque**: è stato provato solo su un MacBook Pro M3 Pro con un monitor Alienware AW3425DWM. Altri monitor possono comportarsi in modo diverso (vedi sotto).
 
@@ -171,8 +171,8 @@ Consigliato: nel menu di MacRemote attiva **Avvia al login**.
 
 - Il server accetta solo connessioni da indirizzi di rete privata (192.168.x.x, 10.x.x.x, 172.16-31.x.x, link-local, loopback).
 - Ogni richiesta richiede un token casuale a 128 bit generato al primo avvio.
-- Limite di 40 richieste al secondo, più un limite separato di 150 al secondo per il trackpad.
-- Il trackpad è bloccato finché non lo attivi e si riblocca dopo 20 secondi; se la connessione cade durante un trascinamento, il Mac rilascia il tasto da solo dopo 8 secondi.
+- Limite di 40 richieste al secondo, più un limite separato di 150 al secondo per il touchpad.
+- Il touchpad è bloccato finché non lo attivi e si riblocca dopo 20 secondi; se la connessione cade durante un trascinamento, il Mac rilascia il tasto da solo dopo 8 secondi.
 - L'anteprima dello schermo è spenta di default, si spegne da sola dopo 15 secondi senza richieste e, da spenta, il Mac non cattura lo schermo.
 - Traffico non cifrato: chiunque sulla tua rete che intercetti il link può usare il telecomando e, se l'anteprima è accesa, vedere lo schermo.
 
@@ -188,7 +188,7 @@ Sources/MacRemote/
   Server.swift           server HTTP (Network.framework) + Bonjour
   Commands.swift         azioni dei pulsanti
   Input.swift            tasti multimediali, tastiera, testo, blocco/spegni schermo
-  Pointer.swift          trackpad: puntatore, clic, trascina, scorrimento, gesti
+  Pointer.swift          touchpad: puntatore, clic, trascina, scorrimento, gesti
   Brightness.swift       luminosità: DisplayServices, DDC/CI, gamma
   Battery.swift          stato batteria
   NowPlaying.swift       brano in riproduzione (AppleScript: Music, Spotify)
@@ -217,7 +217,7 @@ A small menu bar app runs on the Mac. Nothing to install on the iPhone: you open
 - **Brightness**, with separate controls for the Mac's own display and the external monitor.
 - **Navigation**: arrows, OK (Return), Esc, Tab, Shift+Tab, Space. Use them to move between clickable elements without a mouse.
 - **Text**: type on the iPhone into the field that is focused on the Mac.
-- **Trackpad**: a pad that works as the Mac's trackpad. 1 finger moves the pointer (with acceleration: slow is precise, fast crosses the screen), tap = click, double tap = double click, hold and move = drag. 2 fingers scroll (with momentum), moving them together or apart zooms, and a 2-finger tap is a right click. 3 fingers: swipe left/right to switch Space, up for Mission Control, down for the app's windows. Below it are **Click** (hold it and move on the pad to drag) and **Right click** buttons. To avoid accidental touches the pad stays locked until you tap **Activate trackpad**, and locks again after 20 seconds without touches (**Resume** button).
+- **Touchpad**: a pad that works as the Mac's touchpad. 1 finger moves the pointer (with acceleration: slow is precise, fast crosses the screen), tap = click, double tap = double click, hold and move = drag. 2 fingers scroll (with momentum), moving them together or apart zooms, and a 2-finger tap is a right click. 3 fingers: swipe left/right to switch Space, up for Mission Control, down for the app's windows. Below it are **Click** (hold it and move on the pad to drag) and **Right click** buttons. The button at the top left of the section enlarges the touchpad (about 70% of the screen); the same button, or a touch outside the pad, shrinks it back. To avoid accidental touches the pad stays locked until you tap **Activate touchpad**, and locks again after 20 seconds without touches (**Resume** button).
 - **Screen**: turn the display off (the Mac stays on) or lock the Mac.
 - **Language**: the page is in English by default, with Italian available. The language is picked automatically from the phone's language; the EN/IT switch at the top changes it and the choice is remembered. The Mac menu and QR window stay in Italian.
 - **Close**: quits the frontmost app (like ⌘Q: with unsaved work, the app asks first) or quits MacRemote itself, to leave the Mac clean before sleep. Asks for confirmation. Finder is never closed. After quitting MacRemote you need the Mac to reopen it.
@@ -248,7 +248,7 @@ The page that opens on the iPhone. Left: the top part, with volume, brightness (
 | Media | Previous track, play/pause (purple), next track |
 | Navigation | Arrows, OK (Return), Esc, Tab, Shift+Tab, Space |
 | Text | Types on the Mac, with backspace and send |
-| Trackpad | Pointer, click, drag, scroll, 3-finger gestures; locks after 20 s |
+| Touchpad | Pointer, click, drag, scroll, 3-finger gestures; locks after 20 s |
 | Screen | Turn the display off or lock the Mac |
 | Close | Quits the frontmost app or MacRemote, with confirmation |
 | Now Playing | Title, artist, cover art and progress (read-only) |
@@ -271,8 +271,8 @@ The **Now Playing** card appears at the top of the page, only while the Mac is p
 
 - **It does not work away from home**: Mac and iPhone must be on the same Wi-Fi/LAN. There is no cloud server.
 - **It is not encrypted**: plain HTTP, protected by a random token in the link. Fine on a home network you trust, not on public Wi-Fi.
-- **It is not a remote desktop**: the Mac's screen is only shown as a low-rate static preview. Use the trackpad while looking at the Mac's screen.
-- **Pinch zoom is stepped**: macOS has no way to send a real pinch, so MacRemote presses ⌘+ and ⌘−. It works in apps that have those shortcuts (browsers, Preview, Pages, Maps…), is not smooth and does not follow the point under your fingers. The 3-finger swipes use the default macOS shortcuts (Control+arrows): if you turned them off in System Settings → Keyboard → Keyboard Shortcuts → Mission Control, they do not work.
+- **It is not a remote desktop**: the Mac's screen is only shown as a low-rate static preview. Use the touchpad while looking at the Mac's screen.
+- **Pinch zoom is stepped**: macOS has no way to send a real pinch, so MacRemote presses ⌘+ and ⌘− (on the right key for the active keyboard layout). It works in apps that have those shortcuts (browsers, Preview, Pages, Maps…), is not smooth and does not follow the point under your fingers. The 3-finger swipes use the default macOS shortcuts (Control+arrows): if you turned them off in System Settings → Keyboard → Keyboard Shortcuts → Mission Control, they do not work.
 - **Now Playing is read-only**: it shows what is playing, but you cannot seek. Play/pause, next and previous use the media keys.
 - **It is not tested everywhere**: it has only been tried on a MacBook Pro M3 Pro with an Alienware AW3425DWM monitor. Other monitors may behave differently (see below).
 
@@ -349,8 +349,8 @@ Recommended: turn on **Start at login** in the MacRemote menu.
 
 - The server only accepts connections from private network addresses (192.168.x.x, 10.x.x.x, 172.16-31.x.x, link-local, loopback).
 - Every request needs a random 128-bit token generated on first launch.
-- Rate limit of 40 requests per second, plus a separate limit of 150 per second for the trackpad.
-- The trackpad is locked until you activate it and locks again after 20 seconds; if the connection drops mid-drag, the Mac releases the button by itself after 8 seconds.
+- Rate limit of 40 requests per second, plus a separate limit of 150 per second for the touchpad.
+- The touchpad is locked until you activate it and locks again after 20 seconds; if the connection drops mid-drag, the Mac releases the button by itself after 8 seconds.
 - The screen preview is off by default, turns itself off after 15 seconds without requests, and while it is off the Mac does not capture the screen.
 - Traffic is not encrypted: anyone on your network who intercepts the link can use the remote and, while the preview is on, see the screen.
 
@@ -366,7 +366,7 @@ Sources/MacRemote/
   Server.swift           HTTP server (Network.framework) + Bonjour
   Commands.swift         button actions
   Input.swift            media keys, keyboard, text, lock / display sleep
-  Pointer.swift          trackpad: pointer, click, drag, scroll, gestures
+  Pointer.swift          touchpad: pointer, click, drag, scroll, gestures
   Brightness.swift       brightness: DisplayServices, DDC/CI, gamma
   Battery.swift          battery status
   NowPlaying.swift       now playing (AppleScript: Music, Spotify)

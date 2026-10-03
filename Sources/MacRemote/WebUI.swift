@@ -66,6 +66,19 @@ form button{flex:0 0 76px}
 #pv-iv button{min-height:40px;font-size:14px;border-radius:12px}
 #pv-iv button.sel{background:var(--accent);color:#fff}
 #pv-hint{font-size:12px;color:var(--dim);margin:8px 4px 0;text-align:center}
+#tp-head{display:flex;align-items:center;gap:10px;margin:0 0 10px}
+#tp-head .label{margin:0}
+#tp-big{flex:0 0 34px;width:34px;min-height:34px;height:34px;border-radius:11px;padding:0;color:var(--dim)}
+#tp-big .i{width:17px;height:17px}
+#tp-big .x{display:none}#tp-card.big #tp-big .x{display:block}#tp-card.big #tp-big .e{display:none}
+#tp-back{position:fixed;inset:0;z-index:59;background:rgba(0,0,0,.6);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+  opacity:0;pointer-events:none;transition:opacity .2s;touch-action:none}
+html.tpbig{overflow:hidden}
+html.tpbig #tp-back{opacity:1;pointer-events:auto}
+#tp-card.big #tp-box{position:fixed;z-index:60;left:50%;top:50%;transform:translate(-50%,-50%);width:min(calc(100vw - 24px),480px);
+  height:70vh;height:70dvh;display:flex;flex-direction:column;background:var(--card);border-radius:24px;padding:14px;
+  box-shadow:0 20px 60px rgba(0,0,0,.6)}
+#tp-card.big #tp{flex:1;min-height:0;aspect-ratio:auto}
 #tp{position:relative;aspect-ratio:16/10;border-radius:18px;background:var(--btn);overflow:hidden;
   box-shadow:inset 0 0 0 1px rgba(255,255,255,.05);transition:box-shadow .2s;-webkit-touch-callout:none}
 #tp.on{touch-action:none;box-shadow:inset 0 0 0 1px rgba(124,124,255,.4)}
@@ -84,7 +97,7 @@ form button{flex:0 0 76px}
 .tp-btns{margin-top:8px}
 .tp-btns button{min-height:44px;font-size:14px;border-radius:12px;transition:transform .08s,background .12s,opacity .2s}
 #tp-card.off .tp-btns button{opacity:.35;pointer-events:none}
-#toast{position:fixed;left:50%;top:max(10px,env(safe-area-inset-top));transform:translate(-50%,-80px);background:rgba(44,44,48,.95);
+#toast{position:fixed;z-index:70;left:50%;top:max(10px,env(safe-area-inset-top));transform:translate(-50%,-80px);background:rgba(44,44,48,.95);
   -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);padding:10px 16px;border-radius:99px;font-size:14px;font-weight:600;
   transition:transform .25s;pointer-events:none;max-width:90%;text-align:center}
 #toast.show{transform:translate(-50%,0)}#toast.err{color:var(--bad)}
@@ -102,6 +115,8 @@ form button{flex:0 0 76px}
 <symbol id="back" viewBox="0 0 24 24"><path d="M21 5H9l-6 7 6 7h12z"/><path d="m14 9 4 6m0-6-4 6"/></symbol>
 <symbol id="moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/></symbol>
 <symbol id="lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></symbol>
+<symbol id="expand" viewBox="0 0 24 24"><path d="M14 4h6v6M10 20H4v-6M20 4l-6.5 6.5M4 20l6.5-6.5"/></symbol>
+<symbol id="shrink" viewBox="0 0 24 24"><path d="M20 10h-6V4M4 14h6v6M14 10l6.5-6.5M10 14l-6.5 6.5"/></symbol>
 <symbol id="cur" viewBox="0 0 24 24"><path d="M5 3.5 19 10l-6.2 2.1L10.5 19z"/></symbol>
 </defs></svg>
 
@@ -146,11 +161,16 @@ form button{flex:0 0 76px}
   </div>
 </section>
 
+<div id="tp-back"></div>
 <section class="card off" id="tp-card">
-  <p class="label">Trackpad</p>
+ <div id="tp-box">
+  <div id="tp-head">
+    <button id="tp-big" type="button"><svg class="i e"><use href="#expand"/></svg><svg class="i x"><use href="#shrink"/></svg></button>
+    <p class="label">Touchpad</p>
+  </div>
   <div id="tp">
     <div id="tp-lock">
-      <button id="tp-go" type="button"><svg class="i"><use href="#cur"/></svg><span id="tp-go-l" data-i18n="tpStart">Activate trackpad</span></button>
+      <button id="tp-go" type="button"><svg class="i"><use href="#cur"/></svg><span id="tp-go-l" data-i18n="tpStart">Activate touchpad</span></button>
       <p id="tp-help"><span data-i18n="tpH1"></span><br><span data-i18n="tpH2"></span><br><span data-i18n="tpH3"></span></p>
     </div>
   </div>
@@ -158,6 +178,7 @@ form button{flex:0 0 76px}
     <button id="tp-l" type="button"><span data-i18n="click">Click</span></button>
     <button id="tp-r" type="button"><span data-i18n="rclick">Right click</span></button>
   </div>
+ </div>
 </section>
 
 <section class="card">
@@ -225,13 +246,13 @@ const L={
   ph:'Type on the Mac…',confirmApp:'Quit the frontmost app on the Mac?',confirmSelf:'Quit MacRemote? You will need the Mac to open it again.',
   err:'Error ',unreachable:'Mac unreachable',failed:'Command failed',pvUnavailable:'Preview unavailable',media:'Media content',
   hint:(i,n)=>'Tap the image to switch display ('+i+'/'+n+')',
-  tpStart:'Activate trackpad',tpResume:'Resume',click:'Click',rclick:'Right click',
+  tpStart:'Activate touchpad',tpResume:'Resume',tpExpand:'Enlarge touchpad',tpShrink:'Shrink touchpad',click:'Click',rclick:'Right click',
   tpH1:'1 finger: move · tap: click · hold: drag',tpH2:'2 fingers: scroll · pinch: zoom · tap: right click',tpH3:'3 fingers: swipe for Spaces and Mission Control'},
  it:{bright:'Luminosità',nav:'Navigazione',text:'Testo',screen:'Schermo',close:'Chiudi',preview:'Anteprima schermo',space:'Spazio',send:'Invia',off:'Spegni',lock:'Blocca',app:'App in uso',
   ph:'Scrivi sul Mac…',confirmApp:"Chiudere l'app in primo piano sul Mac?",confirmSelf:'Chiudere MacRemote? Per riaprirlo servirà il Mac.',
   err:'Errore ',unreachable:'Mac non raggiungibile',failed:'Comando fallito',pvUnavailable:'Anteprima non disponibile',media:'Contenuto multimediale',
   hint:(i,n)=>"Tocca l'immagine per cambiare schermo ("+i+'/'+n+')',
-  tpStart:'Attiva trackpad',tpResume:'Riprendi',click:'Clic',rclick:'Clic destro',
+  tpStart:'Attiva touchpad',tpResume:'Riprendi',tpExpand:'Ingrandisci touchpad',tpShrink:'Riduci touchpad',click:'Clic',rclick:'Clic destro',
   tpH1:'1 dito: muovi · tocca: clic · tieni: trascina',tpH2:'2 dita: scorri · pizzica: zoom · tocca: clic destro',tpH3:'3 dita: swipe per Spazi e Mission Control'}};
 /* Messages coming from the Mac are English; these pairs translate them (substring replace). */
 const SRV=[['Accessibility permission missing: System Settings › Privacy › Accessibility','Permesso Accessibilità mancante: Impostazioni › Privacy › Accessibilità'],
@@ -255,6 +276,7 @@ function applyLang(){
   document.querySelectorAll('[data-i18n-ph]').forEach(e=>e.placeholder=t(e.dataset.i18nPh));
   document.querySelectorAll('#lang span').forEach(e=>e.classList.toggle('sel',e.dataset.l===lang));
   if(typeof pvHint==='function')pvHint();
+  if(typeof tpBigSync==='function')tpBigSync();
   if(typeof drawNP==='function'&&np&&np.active)$('np-title').textContent=np.title||t('media');
 }
 document.querySelectorAll('#lang span').forEach(e=>e.addEventListener('click',()=>{
@@ -374,7 +396,7 @@ window.addEventListener('pagehide',()=>{if(pv.on)pvSet(false)});
 
 /* Trackpad: locked until the pill is tapped, relocks after 20 s without touches.
    Gestures become small ops (see Pointer.swift), coalesced and sent one request at a time. */
-const TP={idle:20000,hold:400,tap:300,dead:3,scrollDead:8,pinchDead:10,pinchStep:26,swipe:40,sens:1.25,scroll:1.5,friction:.9965};
+const TP={idle:20000,hold:400,tap:300,dead:3,scrollDead:8,pinchDead:8,pinchStep:26,swipe:40,sens:1.25,scroll:1.5,friction:.9965};
 const tp={on:false,q:[],busy:false,last:0,idle:null,raf:0,pts:new Map(),s:null,btn:false};
 const pad=$('tp');
 /* Pointer acceleration: slow strokes stay precise, fast flicks cross the screen. v in px/ms. */
@@ -439,7 +461,9 @@ pad.addEventListener('pointerdown',e=>{
   p.dot.className='dot';pad.appendChild(p.dot);tpDot(p);
   tp.pts.set(e.pointerId,p);
   s.max=Math.max(s.max,tp.pts.size);
-  if(tp.pts.size===2)s.d0=tpDist();
+  if(tp.pts.size>=2){   // a finger that landed first may have jittered: judge the gesture afresh
+    s.d0=tpDist();s.moved=s.swiped=false;s.travel=s.cx=s.cy=s.gx=s.gy=0;
+  }
   clearTimeout(s.hold);
   if(s.held)return;   // while dragging, extra fingers are ignored
   s.mode=s.max>=3?'swipe':s.max===2?'scroll':'move';
@@ -473,9 +497,10 @@ pad.addEventListener('pointermove',e=>{
       // the midpoint stays put). The midpoint's drift is a vector sum, so opposite moves cancel out.
       s.cx+=dx/n;s.cy+=dy/n;
       const dd=Math.abs(tpDist()-s.d0),cm=Math.hypot(s.cx,s.cy);
-      if(dd>=TP.pinchDead&&dd>cm*1.5){s.moved=true;s.mode='pinch';s.zr=tpDist();return}
-      if(cm<TP.scrollDead)return;
+      const pinch=dd>=TP.pinchDead&&dd>=cm*.8;   // real pinches are lopsided: one finger usually does most of the moving
+      if(!pinch&&cm<TP.scrollDead)return;
       s.moved=true;
+      if(pinch){s.mode='pinch';s.zr=tpDist();return}
     }
     const sx=dx/n*TP.scroll,sy=dy/n*TP.scroll;   // each finger moves the centroid by 1/n
     s.hist.push([e.timeStamp,sx,sy]);
@@ -512,6 +537,24 @@ function tpUp(e){
 pad.addEventListener('pointerup',tpUp);
 pad.addEventListener('pointercancel',tpUp);
 pad.addEventListener('contextmenu',e=>e.preventDefault());
+/* iOS Safari would otherwise take two-finger pinches for its own page zoom and cancel our pointers */
+['gesturestart','gesturechange','gestureend'].forEach(ev=>document.addEventListener(ev,e=>e.preventDefault()));
+pad.addEventListener('touchmove',e=>{if(tp.on)e.preventDefault()},{passive:false});
+
+/* Enlarged touchpad: a fixed panel over a dimmed backdrop; touching the backdrop shrinks it back. */
+const tpCard=$('tp-card');
+function tpBigSync(){const b=tpCard.classList.contains('big'),k=t(b?'tpShrink':'tpExpand');$('tp-big').title=k;$('tp-big').setAttribute('aria-label',k)}
+function tpBig(on){
+  if(on===tpCard.classList.contains('big'))return;
+  if(on)tpCard.style.height=tpCard.offsetHeight+'px';   // the card keeps its place in the page while the panel floats
+  else tpCard.style.height='';
+  tpCard.classList.toggle('big',on);document.documentElement.classList.toggle('tpbig',on);
+  tpBigSync();if(tp.on)tpWake();
+}
+$('tp-big').addEventListener('click',()=>tpBig(!tpCard.classList.contains('big')));
+$('tp-back').addEventListener('pointerdown',e=>{e.preventDefault();if(!tp.pts.size)tpBig(false)});   // a stray finger mid-gesture must not close it
+document.addEventListener('visibilitychange',()=>{if(document.hidden)tpBig(false)});
+
 $('tp-go').addEventListener('click',tpUnlock);
 const tpL=$('tp-l');
 tpL.addEventListener('pointerdown',e=>{
