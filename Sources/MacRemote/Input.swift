@@ -36,6 +36,8 @@ enum Input {
     /// Virtual key codes are key positions, not characters: on an Italian layout code 24 types "ì", not "=".
     /// Ask the current layout which key types `char`, so shortcuts like ⌘+ and ⌘− hit the right key.
     static func keyCode(typing char: String, shift: Bool = false) -> CGKeyCode? {
+        // The Text Input Sources API asserts that it runs on the main queue: called from the commands queue it kills the app.
+        if !Thread.isMainThread { return DispatchQueue.main.sync { keyCode(typing: char, shift: shift) } }
         guard let source = TISCopyCurrentKeyboardLayoutInputSource()?.takeRetainedValue(),
               let raw = TISGetInputSourceProperty(source, kTISPropertyUnicodeKeyLayoutData) else { return nil }
         let data = Unmanaged<CFData>.fromOpaque(raw).takeUnretainedValue()
