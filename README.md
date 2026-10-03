@@ -78,6 +78,29 @@ La pagina che si apre sull'iPhone. A sinistra la parte alta: volume, luminosità
 | In riproduzione | Mostra titolo, artista, copertina e avanzamento (solo lettura) |
 | Anteprima schermo | Screenshot del Mac ogni 1, 2 o 5 secondi, spento di default |
 
+### Touchpad
+
+Una sezione con un riquadro che fa da touchpad del Mac. Il riquadro parte **bloccato**: tocca **Attiva touchpad** per iniziare, e dopo 20 secondi senza tocchi si riblocca (**Riprendi**). Il pulsante con le due frecce in alto a sinistra lo ingrandisce (circa il 70% dello schermo); si riduce con lo stesso pulsante o toccando fuori dal riquadro.
+
+<div align="center">
+<img src="docs/touchpad-it.png" width="300" alt="Touchpad bloccato, con il pulsante Attiva touchpad e la legenda dei gesti">
+&nbsp;&nbsp;&nbsp;
+<img src="docs/touchpad-expanded-it.png" width="300" alt="Touchpad ingrandito e attivo, con i pulsanti Clic e Clic destro">
+</div>
+
+| Gesto | Cosa fa sul Mac |
+| --- | --- |
+| 1 dito, muovi | Muove il puntatore (accelera con la velocità) |
+| 1 dito, tocca | Clic. Due o tre tocchi ravvicinati: doppio e triplo clic |
+| 1 dito, tieni premuto e muovi | Trascina |
+| 2 dita, muovi insieme | Scorre, con inerzia |
+| 2 dita, allarga o stringi | Zoom (⌘+ e ⌘−, a scatti) |
+| 2 dita, tocca | Clic destro |
+| 3 dita, swipe sinistra/destra | Cambia Spazio |
+| 3 dita, swipe su / giù | Mission Control / finestre dell'app |
+
+I pulsanti **Clic** e **Clic destro** sotto il riquadro fanno lo stesso con un tocco. Tenendo premuto **Clic** e muovendo un dito sul riquadro si trascina. Serve il permesso Accessibilità.
+
 ### In riproduzione e anteprima schermo
 
 In cima alla pagina compare la scheda **In riproduzione**, solo quando il Mac sta riproducendo qualcosa. In fondo c'è l'interruttore **Anteprima schermo**, spento ogni volta che apri la pagina.
@@ -170,6 +193,9 @@ Consigliato: nel menu di MacRemote attiva **Avvia al login**.
 | "In riproduzione" non compare | Il contenuto è fermo da più di 10 minuti, oppure non sta suonando nulla. Metti in play: la scheda torna entro 2 secondi. |
 | "In riproduzione" mostra "Contenuto multimediale" senza copertina | La fonte non comunica titolo e copertina al sistema (succede con alcuni siti e lettori). Il resto funziona. |
 | "In riproduzione" mostra solo Music e Spotify | L'app è stata compilata con `swift build` e manca la libreria. Compila con `./build.sh`. |
+| Il touchpad non muove il cursore, ma i tasti volume funzionano | Come per i pulsanti: manca il permesso Accessibilità (vedi sopra). |
+| Il touchpad non risponde più | Tocca fuori e poi **Riprendi**, oppure ricarica la pagina. Se si ripete, segnalalo con i passi che hai fatto. |
+| Lo zoom a pizzico non fa nulla | L'app in primo piano non usa ⌘+ e ⌘− per lo zoom. Funziona in browser, Anteprima, Pagine, Mappe e simili. |
 
 ### Sicurezza
 
@@ -200,6 +226,11 @@ Sources/MacRemote/
   ScreenPreview.swift    anteprima schermo (ScreenCaptureKit)
   WebUI.swift            pagina web per l'iPhone (HTML/CSS/JS incorporati)
 ```
+
+### Versioni
+
+- **v0.2.0**: touchpad (cursore, clic, trascinamento, scorrimento, zoom a pizzico, gesti a 3 dita), pulsante per ingrandirlo, blocco automatico dopo 20 secondi.
+- **v0.1.0**: prima versione: volume, luminosità, media, navigazione, testo, schermo, in riproduzione, anteprima schermo.
 
 ---
 
@@ -258,6 +289,29 @@ The page that opens on the iPhone. Left: the top part, with volume, brightness (
 | Close | Quits the frontmost app or MacRemote, with confirmation |
 | Now Playing | Title, artist, cover art and progress (read-only) |
 | Screen preview | Screenshot of the Mac every 1, 2 or 5 seconds, off by default |
+
+### Touchpad
+
+A section with a pad that works as the Mac's touchpad. The pad starts **locked**: tap **Activate touchpad** to begin, and it locks again after 20 seconds without touches (**Resume**). The two-arrows button at the top left enlarges it (about 70% of the screen); the same button, or a touch outside the pad, shrinks it back.
+
+<div align="center">
+<img src="docs/touchpad-en.png" width="300" alt="Locked touchpad, with the Activate touchpad button and the gesture legend">
+&nbsp;&nbsp;&nbsp;
+<img src="docs/touchpad-expanded-en.png" width="300" alt="Enlarged, active touchpad with the Click and Right click buttons">
+</div>
+
+| Gesture | What it does on the Mac |
+| --- | --- |
+| 1 finger, move | Moves the pointer (accelerates with speed) |
+| 1 finger, tap | Click. Two or three quick taps: double and triple click |
+| 1 finger, hold and move | Drag |
+| 2 fingers, move together | Scroll, with momentum |
+| 2 fingers, spread or pinch | Zoom (⌘+ and ⌘−, stepped) |
+| 2 fingers, tap | Right click |
+| 3 fingers, swipe left/right | Switch Space |
+| 3 fingers, swipe up / down | Mission Control / the app's windows |
+
+The **Click** and **Right click** buttons under the pad do the same with one tap. Hold **Click** and move a finger on the pad to drag. Needs the Accessibility permission.
 
 ### Now Playing and screen preview
 
@@ -353,6 +407,9 @@ Recommended: turn on **Start at login** in the MacRemote menu.
 | Now Playing does not appear | The content has been paused for more than 10 minutes, or nothing is playing. Press play: the card returns within 2 seconds. |
 | Now Playing shows "Media content" (or "Contenuto multimediale" in Italian) with no cover | The source does not report title and cover to the system (some sites and players). Everything else works. |
 | Now Playing shows only Music and Spotify | The app was built with `swift build` and the library is missing. Build with `./build.sh`. |
+| The touchpad does not move the cursor, but the volume keys work | Same as the buttons: the Accessibility permission is missing (see above). |
+| The touchpad stops responding | Touch outside it and tap **Resume**, or reload the page. If it keeps happening, report it with the steps you took. |
+| Pinch zoom does nothing | The frontmost app does not use ⌘+ and ⌘− for zoom. It works in browsers, Preview, Pages, Maps and the like. |
 
 ### Security
 
@@ -383,6 +440,11 @@ Sources/MacRemote/
   ScreenPreview.swift    screen preview (ScreenCaptureKit)
   WebUI.swift            iPhone web page (embedded HTML/CSS/JS)
 ```
+
+### Versions
+
+- **v0.2.0**: touchpad (pointer, click, drag, scroll, pinch zoom, 3-finger gestures), an enlarge button, automatic lock after 20 seconds.
+- **v0.1.0**: first release: volume, brightness, media, navigation, text, screen, now playing, screen preview.
 
 <div align="right">
 
