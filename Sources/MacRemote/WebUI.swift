@@ -455,6 +455,7 @@ function tpDot(p){
 pad.addEventListener('pointerdown',e=>{
   if(!tp.on)return;
   e.preventDefault();
+  if(e.isPrimary&&tp.pts.size)tpForget([...tp.pts.keys()]);   // first finger on the glass: anything still tracked is a ghost
   try{pad.setPointerCapture(e.pointerId)}catch(x){}
   tpWake();tpStopInertia();tp.q=tp.q.filter(o=>o[0]!=='s');   // a new touch stops any momentum
   if(!tp.pts.size)tp.s={t0:e.timeStamp,max:0,mode:'move',lead:e.pointerId,travel:0,moved:false,held:false,swiped:false,bx:0,by:0,gx:0,gy:0,cx:0,cy:0,d0:0,zr:0,hist:[],hold:0,sx:0,sy:0,v:0,acted:false};
@@ -531,7 +532,7 @@ function tpUp(e){
   if(tp.pts.size||!s)return;
   clearTimeout(s.hold);tp.s=null;
   if(s.held){pad.classList.remove('drag');return tpPush(['u'])}
-  if(e.type==='pointercancel')return;
+  if(e.type!=='pointerup')return;   // cancelled or capture lost: never a tap
   /* A tap is short and nearly still. Fingers on glass drift a few px, so up to tapSlop px per finger still
      counts; whatever the cursor moved meanwhile is sent back first, so the click lands where it was aimed. */
   if(e.timeStamp-s.t0<TP.tap&&!s.acted&&s.travel<TP.tapSlop*s.max){
@@ -544,6 +545,16 @@ function tpUp(e){
 }
 pad.addEventListener('pointerup',tpUp);
 pad.addEventListener('pointercancel',tpUp);
+pad.addEventListener('lostpointercapture',tpUp);
+/* Safari now and then never sends the lift of one finger in a multi-finger gesture. A finger left in tp.pts
+   makes every later touch count as one finger more (one finger became a 3-finger swipe and the cursor froze).
+   When Safari's own count says the glass is empty, drop whatever is still tracked from before. */
+function tpForget(ids){ids.forEach(id=>{if(tp.pts.has(id))tpUp({pointerId:id,type:'pointercancel',timeStamp:performance.now()})})}
+['touchend','touchcancel'].forEach(ev=>document.addEventListener(ev,e=>{
+  if(e.touches.length||!tp.pts.size)return;
+  const ids=[...tp.pts.keys()];   // only these: a new touch landing meanwhile must survive
+  setTimeout(()=>tpForget(ids),80);   // after the regular pointerup had its chance
+},true));
 pad.addEventListener('contextmenu',e=>e.preventDefault());
 /* iOS Safari would otherwise take two-finger pinches for its own page zoom and cancel our pointers */
 ['gesturestart','gesturechange','gestureend'].forEach(ev=>document.addEventListener(ev,e=>e.preventDefault()));
