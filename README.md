@@ -236,6 +236,7 @@ Sources/MacRemote/
 
 ### Versions
 
+- **v0.3.0**: play button turns into pause while something is playing, media controls moved to the top, color themes for supporters, a small support card after 20 commands.
 - **v0.2.0**: touchpad (pointer, click, drag, scroll, pinch zoom, 3-finger gestures), an enlarge button, automatic lock after 20 seconds.
 - **v0.1.0**: first release: volume, brightness, media, navigation, text, screen, now playing, screen preview.
 
@@ -453,6 +454,7 @@ Sources/MacRemote/
 
 ### Versioni
 
+- **v0.3.0**: il tasto play diventa pausa mentre qualcosa è in riproduzione, controlli media in cima, temi colore per i sostenitori, una piccola card di supporto dopo 20 comandi.
 - **v0.2.0**: touchpad (cursore, clic, trascinamento, scorrimento, zoom a pizzico, gesti a 3 dita), pulsante per ingrandirlo, blocco automatico dopo 20 secondi.
 - **v0.1.0**: prima versione: volume, luminosità, media, navigazione, testo, schermo, in riproduzione, anteprima schermo.
 
