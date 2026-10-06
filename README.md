@@ -247,7 +247,7 @@ Sources/MacRemote/
 
 [→ Switch to English](#en)
 
-> ### 🚀 Scarica MacRemote in un clic
+> ### 🚀 Scarica MacRemote in un click
 > Il modo più veloce per installarlo è su **[www.macremote.it](https://www.macremote.it)**: una pagina guidata con il pulsante di download e i tre passaggi di installazione. Niente compilazione, niente Terminale. **Scaricalo da lì.**
 
 ### Cos'è
