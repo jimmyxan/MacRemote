@@ -28,6 +28,9 @@
 
 [→ Passa all'italiano](#it)
 
+> ### 🚀 Get MacRemote in one click
+> The quickest way to install it is on **[www.macremote.it](https://www.macremote.it)**: a guided page with the download button and the three install steps. No building, no Terminal. **Download it from there.**
+
 ### What it is
 
 MacRemote is a remote control for your Mac, built for a typical situation: the Mac is connected to a monitor, you are in bed, and every time you need to change the volume or pause something you have to get up.
@@ -243,6 +246,9 @@ Sources/MacRemote/
 ## 🇮🇹 Italiano
 
 [→ Switch to English](#en)
+
+> ### 🚀 Scarica MacRemote in un clic
+> Il modo più veloce per installarlo è su **[www.macremote.it](https://www.macremote.it)**: una pagina guidata con il pulsante di download e i tre passaggi di installazione. Niente compilazione, niente Terminale. **Scaricalo da lì.**
 
 ### Cos'è
 
