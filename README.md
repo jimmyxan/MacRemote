@@ -145,6 +145,8 @@ It reads the system playback info (`MediaRemote`, a private API). Since macOS 15
 
 ### Installation
 
+**Easiest way:** visit **[www.macremote.it](https://www.macremote.it)**, see what the app does and download it from there in one click, with the install steps right on the page.
+
 **No build needed:** download `MacRemote.zip` from the [Releases](https://github.com/jimmyxan/MacRemote/releases/latest) page, unzip it and move MacRemote to Applications. On first launch, right-click the app and choose Open (the app is not notarized by Apple). Requires a Mac with Apple silicon. To build it yourself, follow the steps below.
 
 **Building from source:**
@@ -356,6 +358,8 @@ Legge le informazioni di riproduzione del sistema (`MediaRemote`, API privata). 
 - Un iPhone (o qualsiasi telefono con un browser) sulla stessa rete del Mac.
 
 ### Installazione
+
+**Il modo più semplice:** visita **[www.macremote.it](https://www.macremote.it)**, guarda cosa fa l'app e scaricala da lì con un clic, con i passaggi di installazione direttamente nella pagina.
 
 **Senza compilare nulla:** scarica `MacRemote.zip` dalla pagina [Releases](https://github.com/jimmyxan/MacRemote/releases/latest), decomprimilo e sposta MacRemote in Applicazioni. Al primo avvio, click destro sull'app e Apri (l'app non è notarizzata da Apple). Serve un Mac con chip Apple. Per compilarla da te, segui i passi qui sotto.
 
