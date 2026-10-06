@@ -10,7 +10,13 @@ enum WebUI {
 <link rel="apple-touch-icon" href="/icon.png">
 <title>MacRemote</title>
 <style>
-:root{color-scheme:dark;--bg:#000;--card:#111113;--btn:#1d1d20;--btn-on:#34343a;--fg:#f2f2f7;--dim:#8e8e93;--accent:#7c7cff;--ok:#30d158;--bad:#ff453a}
+:root{color-scheme:dark;--bg:#000;--card:#111113;--btn:#1d1d20;--btn-on:#34343a;--fg:#f2f2f7;--dim:#8e8e93;--accent:#7c7cff;--accent-on:#5f5fe6;--ok:#30d158;--bad:#ff453a}
+/* Supporter themes: only the palette changes */
+[data-theme=espresso]{--bg:#0e0a08;--card:#1a1411;--btn:#271e19;--btn-on:#3a2d25;--fg:#f5ece4;--dim:#a8968a;--accent:#c8894f;--accent-on:#a96f3a}
+[data-theme=aurora]{--bg:#03100f;--card:#0a1b1a;--btn:#112725;--btn-on:#1b3a37;--fg:#e6f6f3;--dim:#86a8a3;--accent:#2fbf9b;--accent-on:#22987b}
+[data-theme=sunset]{--bg:#120709;--card:#1e0f12;--btn:#2b161a;--btn-on:#402128;--fg:#fbecec;--dim:#b3929a;--accent:#ff6b5a;--accent-on:#e0503f}
+[data-theme=mono]{--bg:#000;--card:#0b0b0b;--btn:#161616;--btn-on:#2a2a2a;--fg:#fff;--dim:#8a8a8a;--accent:#f2f2f2;--accent-on:#c8c8c8}
+[data-theme=mono] button.accent,[data-theme=mono] #pv-iv button.sel{color:#000}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;touch-action:manipulation}
 body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.2 -apple-system,system-ui,sans-serif;
   padding:max(14px,env(safe-area-inset-top)) 16px max(28px,env(safe-area-inset-bottom));max-width:480px;margin-inline:auto}
@@ -32,7 +38,7 @@ button{flex:1;min-height:56px;border:0;border-radius:16px;background:var(--btn);
   display:flex;align-items:center;justify-content:center;gap:8px;transition:transform .08s,background .12s}
 button:active,button.on{background:var(--btn-on);transform:scale(.96)}
 button.accent{background:var(--accent);color:#fff}
-button.accent:active,button.accent.on{background:#5f5fe6}
+button.accent:active,button.accent.on{background:var(--accent-on)}
 .i{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .dpad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .dpad button{min-height:60px}
@@ -81,7 +87,7 @@ html.tpbig #tp-back{opacity:1;pointer-events:auto}
 #tp-card.big #tp{flex:1;min-height:0;aspect-ratio:auto}
 #tp{position:relative;aspect-ratio:16/10;border-radius:18px;background:var(--btn);overflow:hidden;
   box-shadow:inset 0 0 0 1px rgba(255,255,255,.05);transition:box-shadow .2s;-webkit-touch-callout:none}
-#tp.on{touch-action:none;box-shadow:inset 0 0 0 1px rgba(124,124,255,.4)}
+#tp.on{touch-action:none;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 40%,transparent)}
 #tp.drag{box-shadow:inset 0 0 0 2px var(--accent)}
 #tp-lock{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
   background:rgba(0,0,0,.28);transition:opacity .25s}
@@ -93,10 +99,28 @@ html.tpbig #tp-back{opacity:1;pointer-events:auto}
 #tp-help{margin:0;padding:0 14px;font-size:11.5px;line-height:1.55;color:var(--dim);text-align:center}
 #tp .dot{position:absolute;left:0;top:0;width:40px;height:40px;margin:-20px 0 0 -20px;border-radius:50%;
   background:rgba(255,255,255,.12);pointer-events:none}
-#tp.drag .dot{background:rgba(124,124,255,.45)}
+#tp.drag .dot{background:color-mix(in srgb,var(--accent) 45%,transparent)}
 .tp-btns{margin-top:8px}
 .tp-btns button{min-height:44px;font-size:14px;border-radius:12px;transition:transform .08s,background .12s,opacity .2s}
 #tp-card.off .tp-btns button{opacity:.35;pointer-events:none}
+#sup{position:relative;background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 22%,var(--card)),var(--card) 70%);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 30%,transparent);padding:18px}
+#sup[hidden]{display:none}
+#sup h2{font-size:19px;margin:0 30px 6px 0;letter-spacing:-.01em}
+#sup p{margin:0 0 14px;color:var(--dim);font-size:14.5px;line-height:1.4}
+#sup b{color:var(--fg)}
+#sup .x{position:absolute;top:10px;right:10px;flex:none;width:32px;min-height:32px;height:32px;border-radius:99px;background:none;color:var(--dim);font-size:20px}
+#sup a{flex:1;min-height:50px;border-radius:14px;display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;font-weight:600;background:var(--accent);color:#fff}
+[data-theme=mono] #sup a{color:#000}
+#sup button.later{flex:0 0 auto;padding:0 18px;min-height:50px;border-radius:14px;font-size:15px}
+#th{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+#th button{min-height:0;aspect-ratio:1;border-radius:16px;padding:0;position:relative;flex-direction:column;gap:6px;font-size:11px;font-weight:600;color:var(--dim)}
+#th i{width:26px;height:26px;border-radius:50%;background:var(--sw);box-shadow:0 0 0 3px var(--btn),0 0 0 4px rgba(255,255,255,.12)}
+#th button.sel{box-shadow:inset 0 0 0 2px var(--accent);color:var(--fg)}
+#th button.lk i{opacity:.35}
+#th button.lk::after{content:"";position:absolute;top:7px;right:7px;width:13px;height:13px;background:var(--dim);
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round'%3E%3Crect x='5' y='11' width='14' height='9' rx='2'/%3E%3Cpath d='M8 11V8a4 4 0 0 1 8 0v3'/%3E%3C/svg%3E") center/contain no-repeat}
+#th-note{font-size:12.5px;color:var(--dim);margin:10px 4px 0;line-height:1.4}
 #toast{position:fixed;z-index:70;left:50%;top:max(10px,env(safe-area-inset-top));transform:translate(-50%,-80px);background:rgba(44,44,48,.95);
   -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);padding:10px 16px;border-radius:99px;font-size:14px;font-weight:600;
   transition:transform .25s;pointer-events:none;max-width:90%;text-align:center}
@@ -111,6 +135,7 @@ html.tpbig #tp-back{opacity:1;pointer-events:auto}
 <symbol id="prev" viewBox="0 0 24 24"><path d="M19 6v12L9 12z"/><path d="M5 6v12"/></symbol>
 <symbol id="next" viewBox="0 0 24 24"><path d="M5 6v12l10-6z"/><path d="M19 6v12"/></symbol>
 <symbol id="play" viewBox="0 0 24 24"><path d="M7 4.5v15l12-7.5z"/></symbol>
+<symbol id="pause" viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></symbol>
 <symbol id="chev" viewBox="0 0 24 24"><path d="m6 15 6-6 6 6"/></symbol>
 <symbol id="back" viewBox="0 0 24 24"><path d="M21 5H9l-6 7 6 7h12z"/><path d="m14 9 4 6m0-6-4 6"/></symbol>
 <symbol id="moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/></symbol>
@@ -121,6 +146,16 @@ html.tpbig #tp-back{opacity:1;pointer-events:auto}
 </defs></svg>
 
 <header><h1>MacRemote</h1><div class="hr"><div id="lang"><span data-l="en">EN</span><span data-l="it">IT</span></div><div id="bat"></div></div></header>
+
+<section class="card" id="sup" hidden>
+  <button class="x" id="sup-x" type="button" aria-label="Close">×</button>
+  <h2 data-i18n="supT"></h2>
+  <p id="sup-p"></p>
+  <div class="row">
+    <a id="sup-go" href="https://buymeacoffee.com/jimmyxan" target="_blank" rel="noopener">☕ <span data-i18n="supGo"></span></a>
+    <button class="later" id="sup-later" type="button" data-i18n="supLater"></button>
+  </div>
+</section>
 
 <section class="card" id="np" hidden>
   <img id="np-art" alt="">
@@ -140,6 +175,15 @@ html.tpbig #tp-back{opacity:1;pointer-events:auto}
   </div>
 </section>
 
+<section class="card">
+  <p class="label">Media</p>
+  <div class="row">
+    <button data-a="prev"><svg class="i"><use href="#prev"/></svg></button>
+    <button class="accent" data-a="play" id="play-btn"><svg class="i"><use href="#play"/></svg></button>
+    <button data-a="next"><svg class="i"><use href="#next"/></svg></button>
+  </div>
+</section>
+
 <section class="card" id="sec-bright">
   <p class="label" data-i18n="bright">Luminosità</p>
   <div class="row" id="sec-mac"><span class="name">Mac</span>
@@ -149,15 +193,6 @@ html.tpbig #tp-back{opacity:1;pointer-events:auto}
   <div class="row" id="sec-ext"><span class="name">Monitor</span>
     <button data-a="ext_bright_down" data-hold><svg class="i"><use href="#minus"/></svg></button>
     <button data-a="ext_bright_up" data-hold><svg class="i"><use href="#sun"/></svg><svg class="i"><use href="#plus"/></svg></button>
-  </div>
-</section>
-
-<section class="card">
-  <p class="label">Media</p>
-  <div class="row">
-    <button data-a="prev"><svg class="i"><use href="#prev"/></svg></button>
-    <button class="accent" data-a="play"><svg class="i"><use href="#play"/></svg></button>
-    <button data-a="next"><svg class="i"><use href="#next"/></svg></button>
   </div>
 </section>
 
@@ -233,6 +268,18 @@ html.tpbig #tp-back{opacity:1;pointer-events:auto}
   </div>
 </section>
 
+<section class="card">
+  <p class="label" data-i18n="theme"></p>
+  <div id="th">
+    <button type="button" data-th="" style="--sw:#7c7cff"><i></i>Indigo</button>
+    <button type="button" data-th="espresso" style="--sw:#c8894f"><i></i>Espresso</button>
+    <button type="button" data-th="aurora" style="--sw:#2fbf9b"><i></i>Aurora</button>
+    <button type="button" data-th="sunset" style="--sw:#ff6b5a"><i></i>Sunset</button>
+    <button type="button" data-th="mono" style="--sw:#f2f2f2"><i></i>Mono</button>
+  </div>
+  <p id="th-note"></p>
+</section>
+
 <div id="toast"></div>
 <script>
 const p=new URLSearchParams(location.search);
@@ -247,13 +294,17 @@ const L={
   err:'Error ',unreachable:'Mac unreachable',failed:'Command failed',pvUnavailable:'Preview unavailable',media:'Media content',
   hint:(i,n)=>'Tap the image to switch display ('+i+'/'+n+')',
   tpStart:'Activate touchpad',tpResume:'Resume',tpExpand:'Enlarge touchpad',tpShrink:'Shrink touchpad',click:'Click',rclick:'Right click',
-  tpH1:'1 finger: move · tap: click · hold: drag',tpH2:'2 fingers: scroll · pinch: zoom · tap: right click',tpH3:'3 fingers: swipe for Spaces and Mission Control'},
+  tpH1:'1 finger: move · tap: click · hold: drag',tpH2:'2 fingers: scroll · pinch: zoom · tap: right click',tpH3:'3 fingers: swipe for Spaces and Mission Control',
+  supT:'Enjoying MacRemote?',supP:n=>'You have sent <b>'+n+' commands</b> from the couch without getting up. MacRemote is free and made by one person: a coffee keeps it going, and unlocks the color themes.',
+  supGo:'Buy me a coffee',supLater:'Later',theme:'Theme',thLocked:'Supporter themes: buy me a coffee to unlock Espresso, Aurora, Sunset and Mono.',thOpen:'Thanks for the coffee! All themes are yours.'},
  it:{bright:'Luminosità',nav:'Navigazione',text:'Testo',screen:'Schermo',close:'Chiudi',preview:'Anteprima schermo',space:'Spazio',send:'Invia',off:'Spegni',lock:'Blocca',app:'App in uso',
   ph:'Scrivi sul Mac…',confirmApp:"Chiudere l'app in primo piano sul Mac?",confirmSelf:'Chiudere MacRemote? Per riaprirlo servirà il Mac.',
   err:'Errore ',unreachable:'Mac non raggiungibile',failed:'Comando fallito',pvUnavailable:'Anteprima non disponibile',media:'Contenuto multimediale',
   hint:(i,n)=>"Tocca l'immagine per cambiare schermo ("+i+'/'+n+')',
   tpStart:'Attiva touchpad',tpResume:'Riprendi',tpExpand:'Ingrandisci touchpad',tpShrink:'Riduci touchpad',click:'Clic',rclick:'Clic destro',
-  tpH1:'1 dito: muovi · tocca: clic · tieni: trascina',tpH2:'2 dita: scorri · pizzica: zoom · tocca: clic destro',tpH3:'3 dita: swipe per Spazi e Mission Control'}};
+  tpH1:'1 dito: muovi · tocca: clic · tieni: trascina',tpH2:'2 dita: scorri · pizzica: zoom · tocca: clic destro',tpH3:'3 dita: swipe per Spazi e Mission Control',
+  supT:'Ti piace MacRemote?',supP:n=>'Hai mandato <b>'+n+' comandi</b> dal divano senza alzarti. MacRemote è gratis e lo fa una persona sola: un caffè lo tiene in vita, e sblocca i temi colore.',
+  supGo:'Offrimi un caffè',supLater:'Più tardi',theme:'Tema',thLocked:'Temi per i sostenitori: offrimi un caffè per sbloccare Espresso, Aurora, Sunset e Mono.',thOpen:'Grazie del caffè! Tutti i temi sono tuoi.'}};
 /* Messages coming from the Mac are English; these pairs translate them (substring replace). */
 const SRV=[['Accessibility permission missing: System Settings › Privacy › Accessibility','Permesso Accessibilità mancante: Impostazioni › Privacy › Accessibilità'],
  ['Screen Recording permission missing: System Settings › Privacy › Screen Recording','Permesso Registrazione schermo mancante: Impostazioni › Privacy › Registrazione schermo'],
@@ -277,6 +328,7 @@ function applyLang(){
   document.querySelectorAll('#lang span').forEach(e=>e.classList.toggle('sel',e.dataset.l===lang));
   if(typeof pvHint==='function')pvHint();
   if(typeof tpBigSync==='function')tpBigSync();
+  if(typeof supSync==='function')supSync();
   if(typeof drawNP==='function'&&np&&np.active)$('np-title').textContent=np.title||t('media');
 }
 document.querySelectorAll('#lang span').forEach(e=>e.addEventListener('click',()=>{
@@ -293,7 +345,7 @@ async function send(action,value){
     const r=await fetch('/cmd',{method:'POST',headers:{'X-Token':T},body:JSON.stringify({action,value})});
     if(!r.ok)return toast(t('err')+r.status,true);
     const j=await r.json();
-    if(!j.ok)toast(srv(j.info||t('failed')),true);else toast(srv(j.info||''));
+    if(!j.ok)toast(srv(j.info||t('failed')),true);else{toast(srv(j.info||''));supCount()}
   }catch(e){toast(t('unreachable'),true)}
 }
 async function status(){
@@ -325,6 +377,14 @@ document.querySelectorAll('button[data-a]').forEach(b=>{
   ['pointerup','pointercancel','pointerleave'].forEach(ev=>b.addEventListener(ev,stop));
 });
 
+/* The play button shows pause while something is playing (also flipped at once on tap; the next poll corrects it) */
+let isPlaying=false;
+function playIcon(on){
+  isPlaying=on;
+  $('play-btn').firstElementChild.firstElementChild.setAttribute('href',on?'#pause':'#play');
+}
+$('play-btn').addEventListener('pointerdown',()=>{playIcon(!isPlaying);setTimeout(pollNP,700)});
+
 /* Now Playing */
 let np=null,npAt=0,npKey='',npArt=false;
 const fmt=t=>{t=Math.max(0,Math.floor(t||0));return Math.floor(t/60)+':'+String(t%60).padStart(2,'0')};
@@ -335,6 +395,7 @@ async function pollNP(){
     if(!r.ok)return;
     np=await r.json();npAt=performance.now();
     $('np').hidden=!np.active;
+    playIcon(np.active&&np.playing);
     if(!np.active)return;
     $('np-title').textContent=np.title||t('media');
     $('np-artist').textContent=[np.artist,np.album].filter(Boolean).join(' · ');
@@ -587,6 +648,38 @@ tpL.addEventListener('pointerdown',e=>{
 $('tp-r').addEventListener('pointerdown',e=>{e.preventDefault();if(tp.on){tpWake();tpPush(['r'])}});
 document.addEventListener('visibilitychange',()=>{if(document.hidden)tpLock()});
 window.addEventListener('pagehide',tpLock);
+/* Support: after 20 successful commands a card asks for a coffee; "Later" asks again 100 commands on.
+   Tapping the coffee link unlocks the themes (honor system: no account, nothing leaves the phone). */
+const ls=(k,v)=>{try{if(v===undefined)return localStorage[k];localStorage[k]=v}catch(e){}};
+const SUP_AT=20,SUP_AGAIN=100;
+function supSync(){
+  const n=+ls('cmds')||0,paid=ls('supporter')==='1';
+  $('sup').hidden=paid||n<(+ls('supNext')||SUP_AT);
+  $('sup-p').innerHTML=t('supP')(n);
+  document.querySelectorAll('#th button').forEach(b=>{
+    b.classList.toggle('lk',!paid&&!!b.dataset.th);
+    b.classList.toggle('sel',b.dataset.th===(ls('theme')||''));
+  });
+  $('th-note').textContent=t(paid?'thOpen':'thLocked');
+}
+function supCount(){
+  const n=(+ls('cmds')||0)+1;ls('cmds',n);
+  if(n===(+ls('supNext')||SUP_AT))supSync();
+}
+function supSnooze(){ls('supNext',(+ls('cmds')||0)+SUP_AGAIN);supSync()}
+function setTheme(th){
+  if(th)document.documentElement.dataset.theme=th;else delete document.documentElement.dataset.theme;
+  document.querySelector('meta[name=theme-color]').content=getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
+}
+$('sup-go').addEventListener('click',()=>{ls('supporter','1');supSync()});
+$('sup-later').addEventListener('click',supSnooze);
+$('sup-x').addEventListener('click',supSnooze);
+document.querySelectorAll('#th button').forEach(b=>b.addEventListener('click',()=>{
+  if(b.dataset.th&&ls('supporter')!=='1'){$('sup').hidden=false;$('sup').scrollIntoView({behavior:'smooth'});return}
+  ls('theme',b.dataset.th);setTheme(b.dataset.th);supSync();
+}));
+setTheme(ls('supporter')==='1'?ls('theme')||'':'');
+
 $('tf').addEventListener('submit',e=>{
   e.preventDefault();const i=$('ti');
   if(i.value){send('text',i.value);i.value=''}
