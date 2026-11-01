@@ -62,7 +62,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         statusItem.button?.image = NSImage(systemSymbolName: "iphone.and.arrow.forward", accessibilityDescription: "MacRemote")
         rebuildMenu()
-        showQR()
+        // Hosts that show their own pairing UI (e.g. Boring Notch) launch us with --headless.
+        if !CommandLine.arguments.contains("--headless") { showQR() }
     }
 
     /// Double-clicking the app while it is already running lands here. Without this nothing visible happens,
