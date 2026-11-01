@@ -183,6 +183,8 @@ Recommended: turn on **Start at login** in the MacRemote menu.
 
 **MacRemote menu:** show QR, copy link, regenerate token (invalidates old links), start at login, quit.
 
+**Headless launch:** `open MacRemote.app --args --headless` starts the app without the QR window (menu bar icon and server only). Used by hosts that show their own pairing QR, such as TheBoringNotch. Double-clicking the already running app still opens the QR window.
+
 **To move between clickable items with Tab** in every app: System Settings → Keyboard → turn on "Keyboard navigation".
 
 ### Troubleshooting
@@ -236,6 +238,7 @@ Sources/MacRemote/
 
 ### Versions
 
+- **v0.3.1**: `--headless` launch option: starts without the QR window, for hosts that show their own pairing UI (TheBoringNotch).
 - **v0.3.0**: play button turns into pause while something is playing, media controls moved to the top, color themes for supporters, a small support card after 20 commands.
 - **v0.2.0**: touchpad (pointer, click, drag, scroll, pinch zoom, 3-finger gestures), an enlarge button, automatic lock after 20 seconds.
 - **v0.1.0**: first release: volume, brightness, media, navigation, text, screen, now playing, screen preview.
@@ -401,6 +404,8 @@ Consigliato: nel menu di MacRemote attiva **Avvia al login**.
 
 **Menu di MacRemote:** mostra QR, copia link, rigenera token (invalida i vecchi link), avvia al login, esci.
 
+**Avvio headless:** `open MacRemote.app --args --headless` avvia l'app senza la finestra QR (solo icona nella barra dei menu e server). Lo usano gli host che mostrano un proprio QR di associazione, come TheBoringNotch. Il doppio click sull'app già aperta apre comunque la finestra QR.
+
 **Per muoverti tra i cliccabili con Tab** in tutte le app: Impostazioni di Sistema → Tastiera → attiva "Accesso completo da tastiera".
 
 ### Risoluzione problemi
@@ -454,6 +459,7 @@ Sources/MacRemote/
 
 ### Versioni
 
+- **v0.3.1**: opzione di avvio `--headless`: parte senza la finestra QR, per gli host che mostrano una propria UI di associazione (TheBoringNotch).
 - **v0.3.0**: il tasto play diventa pausa mentre qualcosa è in riproduzione, controlli media in cima, temi colore per i sostenitori, una piccola card di supporto dopo 20 comandi.
 - **v0.2.0**: touchpad (cursore, clic, trascinamento, scorrimento, zoom a pizzico, gesti a 3 dita), pulsante per ingrandirlo, blocco automatico dopo 20 secondi.
 - **v0.1.0**: prima versione: volume, luminosità, media, navigazione, testo, schermo, in riproduzione, anteprima schermo.
