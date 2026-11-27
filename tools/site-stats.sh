@@ -1,6 +1,6 @@
 #!/bin/bash
-# Writes the lines of code (and the current stars and forks, as a no-JS fallback) into site/index.html.
-# The site fetches live stars and forks from the GitHub API; lines of code only change here. Run it before publishing the site.
+# Writes the lines of code (and the current stars, forks and downloads, as a no-JS fallback) into site/index.html.
+# The site fetches live stars, forks and downloads from the GitHub API; lines of code only change here. Run it before publishing the site.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 count() { cat "$@" | grep -c '[^[:space:]]'; }   # non-blank lines
@@ -15,4 +15,6 @@ sed -i '' -E \
   ${STARS:+-e "s/(data-stat=\"stars\">)[0-9]*/\1$STARS/"} \
   ${FORKS:+-e "s/(data-stat=\"forks\">)[0-9]*/\1$FORKS/"} \
   site/index.html
-echo "app $APP + site $SITE = $((APP + SITE)) lines; stars ${STARS:-?}, forks ${FORKS:-?}"
+DOWNLOADS=$(gh api 'repos/jimmyxan/MacRemote/releases?per_page=100' --jq '[.[].assets[].download_count] | add // 0' 2>/dev/null || true)
+if [ -n "$DOWNLOADS" ]; then sed -i '' -E "s/(data-stat=\"downloads\">)[0-9]*/\1$DOWNLOADS/" site/index.html; fi
+echo "app $APP + site $SITE = $((APP + SITE)) lines; stars ${STARS:-?}, forks ${FORKS:-?}, downloads ${DOWNLOADS:-?}"
